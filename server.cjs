@@ -41,13 +41,12 @@ function getStartOfWeek() {
     return new Date(d.setDate(diff));
 }
 
-const fs = require('fs');
+const path = require('path');
 const axios = require('axios');
 
 app.use('/assets', express.static('dist/assets'))
 app.get('/', (req, res) => {
-    res.setHeader("content-type", "text/html");
-    fs.createReadStream("dist/index.html").pipe(res);
+    res.sendFile(path.join(__dirname, "/dist/index.html"));
 })
 
 app.get('/types', (req, res) => {
