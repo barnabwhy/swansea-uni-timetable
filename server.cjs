@@ -26,8 +26,8 @@ const api = {
     catsPath: 'https://opentimetables.swan.ac.uk/broker/api/CategoryTypes/%t/Categories/Filter?pageNumber=%n'
 }
 
-function getStartOfWeek() {
-    const d = new Date();
+function getStartOfWeek(offset = 0) {
+    let d = new Date(Date.now() + 24 * 3600 * 1000 * 7 * offset);
     const day = d.getDay();
 
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
@@ -101,9 +101,9 @@ app.get('/cats/:type/:page', (req, res) => {
     })
 })
 
-app.get('/:type/:cat', (req, res) => {
+app.get('/:type/:cat/:weekOffset', (req, res) => {
     const url = api.categoryPath.replace('%c', req.params.type);
-    const body = api.categoryBody.replace('%c', req.params.cat).replace('%w', getStartOfWeek().toISOString());
+    const body = api.categoryBody.replace('%c', req.params.cat).replace('%w', getStartOfWeek(parseInt(req.params.weekOffset) || 0).toISOString());
 
     axios(url, {
         method: 'post',

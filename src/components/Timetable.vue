@@ -4,34 +4,37 @@ import { defineComponent } from "vue";
 export default defineComponent({
   data() {
     return {
-      apiPath: "%t/%c",
+      apiPath: "https://swansea.doesnt-like.me/%t/%c/%w",
       res: [] as any[],
       days: {} as { [key: number]: any },
       exclude: [] as string[],
       loaded: false,
+      loading: true,
 
       showDetails: false,
       detailsEvent: '',
       showSettings: false,
       
-      typesPath: "types",
+      typesPath: "https://swansea.doesnt-like.me/types",
       types: [] as any[],
       selectedType: '',
 
-      typesExPath: "typesEx",
+      typesExPath: "https://swansea.doesnt-like.me/typesEx",
       typesEx: [] as any[],
 
       depSearch: '',
-      depsPath: "cats/%t/%n",
+      depsPath: "https://swansea.doesnt-like.me/cats/%t/%n",
       deps: [] as any[],
       selectedDep: '',
 
       catSearch: '',
-      catsPath: "cats/%t/%n",
+      catsPath: "https://swansea.doesnt-like.me/cats/%t/%n",
       cats: [] as any[],
       selectedCat: '',
       
       page: 'types',
+
+      weekOffset: 0,
     } as { [key: string]: any}
   },
   computed: {
@@ -48,8 +51,8 @@ export default defineComponent({
     dayString(idx: number) {
       return ["Sunday", "Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][idx] || idx;
     },
-    startOfWeek() {
-      let d = new Date();
+    startOfWeek(offset: number = 0) {
+      let d = new Date(Date.now() + 24 * 3600 * 1000 * 7 * offset);
       var day = d.getDay(),
           diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
       d.setHours(0,0,0,0);
@@ -110,6 +113,38 @@ export default defineComponent({
       const params = new URLSearchParams(location.search);
       params.set('ex', this.exclude.join(','));
       window.history.replaceState('', '', '?'+params.toString());
+    },
+    async loadTimetable() {
+      this.loading = true;
+
+      const params = new URLSearchParams(location.search);
+      const type = params.get('t') || "";
+      const cat = params.get('c') || "";
+      this.res = await (await fetch(this.apiPath.replace('%t', type).replace('%c', cat).replace('%w', this.weekOffset))).json();
+      
+      this.days = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+      for(const category of this.res) {
+        for(const event of category.CategoryEvents) {
+          let day = new Date(event.StartDateTime).getDay();
+          if(!this.days[day])
+            this.days[day] = [];
+
+          this.days[day].push(event);
+        }
+      }
+      for(let day of Object.values(this.days)) {
+        day = (day as any).sort((a: any, b: any) => { return new Date(a.StartDateTime).getTime() - new Date(b.StartDateTime).getTime() });
+      }
+
+      this.loading = false;
+    },
+    prevWeek() {
+      this.weekOffset--;
+      this.loadTimetable();
+    },
+    nextWeek() {
+      this.weekOffset++;
+      this.loadTimetable();
     }
   },
   async created() {
@@ -125,22 +160,7 @@ export default defineComponent({
     if(params.has('t') && params.has('c')) {
       this.page = 'timetable';
 
-      const type = params.get('t') || "";
-      const cat = params.get('c') || "";
-      this.res = await (await fetch(this.apiPath.replace('%t', type).replace('%c', cat))).json();
-      
-      for(const category of this.res) {
-        for(const event of category.CategoryEvents) {
-          let day = new Date(event.StartDateTime).getDay();
-          if(!this.days[day])
-            this.days[day] = [];
-
-          this.days[day].push(event);
-        }
-      }
-      for(let day of Object.values(this.days)) {
-        day = (day as any).sort((a: any, b: any) => { return new Date(a.StartDateTime).getTime() - new Date(b.StartDateTime).getTime() });
-      }
+      this.loadTimetable();
 
       this.loaded = true;
     } else {
@@ -182,8 +202,10 @@ export default defineComponent({
   </template>
 
   <template v-if="page == 'timetable'">
-    <h1>Week commencing {{ startOfWeek().toLocaleDateString() }}</h1>
+    <h1>Week commencing {{ startOfWeek(weekOffset).toLocaleDateString() }}</h1>
     <span class="material-icons settings" @click="showSettings = true">settings</span>
+    <span class="material-icons prevWeek" @click="prevWeek()">chevron_left</span>
+    <span class="material-icons nextWeek" @click="nextWeek()">chevron_right</span>
     <div class="timetable" v-if="loaded">
       <div class="day" v-for="(day, idx) of days">
         <b>{{ dayString(idx) }}</b>
@@ -195,8 +217,14 @@ export default defineComponent({
             <p class="location"><span class="material-icons">location_on</span>{{ ev.Location }}</p>
           </div>
         </template>
+        <template v-if="day.length == 0">
+          <div class="event">
+            <p class="bigText">Nothing on today</p>
+          </div>
+        </template>
       </div>
     </div>
+    <span class="loader" :class="{ visible: loading }"></span>
 
     <div class="details" :class="{ show: showDetails || showSettings }">
       <span class="material-icons close" @click="showDetails = false; showSettings = false">close</span>
@@ -222,6 +250,45 @@ export default defineComponent({
 h1 {
   padding: 8px;
 }
+
+.loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.2s 0.05s;
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(0,0,0,0.25);
+}
+.loader:after {
+  content: '';
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #FFF;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+.loader.visible {
+  /* visibility: visible; */
+  opacity: 1;
+}
+@keyframes rotation {
+  0% {
+    rotate: 0deg;
+  }
+  100% {
+    rotate: 360deg;
+  }
+} 
 
 .type {
   height: 128px;
@@ -298,6 +365,17 @@ h1 {
 }
 .event p {
   margin: 0;
+}
+.event .bigText {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  font-weight: bold;
+  width: 240px;
+  text-align: center;
+  user-select: none;
 }
 .event:hover {
   box-shadow: 0px 2px 8px rgba(0,0,0,0.5);
@@ -448,5 +526,30 @@ input {
   margin: 0px 0px 0px 4px;
   font-size: 16px;
   vertical-align: middle;
+}
+
+.prevWeek, .nextWeek {
+  position: absolute;
+  top: 8px;
+  right: 56px;
+  margin: 0;
+  padding: 8px;
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 32px;
+  font-size: 24px;
+  user-select: none;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+.prevWeek {
+  right: 104px;
+}
+.prevWeek:hover, .nextWeek:hover {
+  background-color: rgba(0,0,0,0.2);
+  color: white;
+}
+.prevWeek:active, .nextWeek:active {
+  background-color: rgba(0,0,0,0.15);
+  color: white;
 }
 </style>
