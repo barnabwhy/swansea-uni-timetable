@@ -6,17 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve": "node server.cjs"
   },
   "dependencies": {
+    "apicache": "^1.6.3",
     "axios": "^1.1.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "express-cache-middleware": "^1.0.1",
     "vue": "^3.2.37"
   },
   "devDependencies": {
-    "@types/open-graph-scraper": "^4.8.1",
     "@vitejs/plugin-vue": "^3.1.0",
     "typescript": "^4.6.4",
     "vite": "^3.1.0",

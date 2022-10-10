@@ -4,17 +4,12 @@ var cors = require('cors')
 const app = express()
 const port = 80
 
-const ExpressCache = require('express-cache-middleware')
-const cacheManager = require('cache-manager')
- 
-const cacheMiddleware = new ExpressCache(
-    cacheManager.caching({
-        store: 'memory', max: 10000, ttl: 120
-    })
-)
+const apicache = require("apicache");
 
 app.use(cors())
-cacheMiddleware.attach(app)
+
+let cache = apicache.middleware
+app.use(cache('5 minutes'))
 
 const api = {
     auth: "kR1n1RXYhF",
@@ -46,7 +41,9 @@ const axios = require('axios');
 
 app.use('/assets', express.static('dist/assets'))
 app.get('/', (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
     res.sendFile(path.join(__dirname, "/dist/index.html"));
+    res.status(200);
 })
 
 app.get('/types', (req, res) => {
@@ -125,5 +122,5 @@ app.get('/:type/:cat', (req, res) => {
 })
 
 app.listen(port, () => {
-  console.log(`Timetable proxy listening on port ${port}`)
+  console.log(`Timetable server listening on port ${port}`)
 })
