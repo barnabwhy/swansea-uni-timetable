@@ -9,7 +9,7 @@ const apicache = require("apicache");
 app.use(cors())
 
 let cache = apicache.middleware
-app.use(cache('5 minutes'))
+app.use(cache('2 minutes'))
 
 const api = {
     auth: "kR1n1RXYhF",
