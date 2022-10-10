@@ -249,6 +249,8 @@ export default defineComponent({
 <style scoped>
 h1 {
   padding: 8px;
+  margin-right: 132px;
+  line-height: 1.1;
 }
 
 .loader {
