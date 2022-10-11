@@ -217,7 +217,7 @@ export default defineComponent({
             <p class="location"><span class="material-icons">location_on</span>{{ ev.Location }}</p>
           </div>
         </template>
-        <template v-if="day.length == 0">
+        <template v-if="day.filter((ev:any) => { return !this.exclude.some((v: string) => { return ev.Name.toLowerCase().indexOf(v.toLowerCase()) >= 0 }) }).length == 0">
           <div class="event">
             <p class="bigText">Nothing on today</p>
           </div>
