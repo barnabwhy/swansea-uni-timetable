@@ -30,6 +30,7 @@ export default defineComponent({
       catSearch: '',
       catsPath: "https://swansea.doesnt-like.me/cats/%t/%n",
       cats: [] as any[],
+      catsFetchStartTime: 0,
       selectedCat: '',
       
       page: 'types',
@@ -79,15 +80,16 @@ export default defineComponent({
     //   this.loadCats();
     // },
     async loadCats() {
-      let type = this.selectedType;
+      let startTime = Date.now();
+      this.catsFetchStartTime = startTime;
       this.cats = [];
       let res = (await (await fetch(this.catsPath.replace('%t', this.selectedType).replace('%n', "1"))).json());
-      if(type != this.selectedType)
+      if(this.catsFetchStartTime != startTime)
         return;
       this.cats.push(...res.Results);
       while(res.CurrentPage < res.TotalPages) {
         res = (await (await fetch(this.catsPath.replace('%t', this.selectedType).replace('%n', res.CurrentPage+1))).json());
-        if(type != this.selectedType)
+        if(this.catsFetchStartTime != startTime)
           return;
         this.cats.push(...res.Results);
       }
