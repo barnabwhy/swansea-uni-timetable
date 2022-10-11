@@ -145,6 +145,13 @@ export default defineComponent({
     nextWeek() {
       this.weekOffset++;
       this.loadTimetable();
+    },
+    isExcluded(ev: any) {
+      return (
+        this.exclude.some((v: string) => { return ev.Name.toLowerCase().indexOf(v.toLowerCase()) >= 0 }) ||
+        this.exclude.some((v: string) => { return ev.EventType.toLowerCase().indexOf(v.toLowerCase()) >= 0 }) ||
+        this.exclude.some((v: string) => { return ev.Location.toLowerCase().indexOf(v.toLowerCase()) >= 0 })
+      )
     }
   },
   async created() {
@@ -210,14 +217,14 @@ export default defineComponent({
       <div class="day" v-for="(day, idx) of days">
         <b>{{ dayString(idx) }}</b>
         <template v-for="ev in day">
-          <div class="event" :class="{ active: detailsEvent == ev.EventIdentity && showDetails }" v-if="!exclude.some((v: string) => { return ev.Name.toLowerCase().indexOf(v.toLowerCase()) >= 0 })" @click="detailsEvent = ev.EventIdentity; showDetails = true">
+          <div class="event" :class="{ active: detailsEvent == ev.EventIdentity && showDetails }" v-if="!isExcluded(ev)" @click="detailsEvent = ev.EventIdentity; showDetails = true">
             <p class="name">{{ ev.Name }}</p>
             <p class="evType"><span class="material-icons">event</span>{{ ev.EventType }}</p>
             <p class="time"><span class="material-icons">schedule</span>{{ getTime(ev.StartDateTime) }}-{{ getTime(ev.EndDateTime) }}</p>
             <p class="location"><span class="material-icons">location_on</span>{{ ev.Location }}</p>
           </div>
         </template>
-        <template v-if="day.filter((ev:any) => { return !exclude.some((v: string) => { return ev.Name.toLowerCase().indexOf(v.toLowerCase()) >= 0 }) }).length == 0">
+        <template v-if="day.filter((ev:any) => { return !isExcluded(ev) }).length == 0">
           <div class="event">
             <p class="bigText">Nothing on today</p>
           </div>
