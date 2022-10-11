@@ -39,12 +39,12 @@ function getStartOfWeek(offset = 0) {
 const path = require('path');
 const axios = require('axios');
 
+app.use('/assets', express.static('dist/assets'))
 app.get('/', (req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.sendFile(path.join(__dirname, "/dist/index.html"));
     res.status(200);
 })
-app.use('/', express.static('dist'))
 
 app.get('/types', (req, res) => {
     const url = api.typesPath;
