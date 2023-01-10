@@ -40,7 +40,7 @@ export default defineComponent({
   },
   computed: {
     detailsEv() {
-      return this.res[0].CategoryEvents.find((ev: any) => ev.EventIdentity == this.detailsEvent)
+      return this.res.CategoryEvents[0].Results.find((ev: any) => ev.EventIdentity == this.detailsEvent)
     }
   },
   methods: {
@@ -125,15 +125,15 @@ export default defineComponent({
       this.res = await (await fetch(this.apiPath.replace('%t', type).replace('%c', cat).replace('%w', this.weekOffset))).json();
       
       this.days = { 1: [], 2: [], 3: [], 4: [], 5: [] };
-      for(const category of this.res) {
-        for(const event of category.CategoryEvents) {
+      //for(const category of this.res) {
+        for(const event of this.res.CategoryEvents[0].Results) {
           let day = new Date(event.StartDateTime).getDay();
           if(!this.days[day])
             this.days[day] = [];
 
           this.days[day].push(event);
         }
-      }
+      //}
       for(let day of Object.values(this.days)) {
         day = (day as any).sort((a: any, b: any) => { return new Date(a.StartDateTime).getTime() - new Date(b.StartDateTime).getTime() });
       }

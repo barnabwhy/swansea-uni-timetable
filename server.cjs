@@ -13,17 +13,22 @@ app.use(cache('5 minutes'))
 
 const api = {
     auth: "kR1n1RXYhF",
-    categoryPath: "https://opentimetables.swan.ac.uk/broker/api/categoryTypes/%c/categories/events/filter",
+    categoryPath: "https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/CategoryTypes/Categories/Events/Filter/c0fafdf7-2aab-419e-a69b-bbb9e957303c",
     categoryBody: `{
         "ViewOptions": { "Weeks": [ { "FirstDayInWeek": "%w" } ] },
-        "CategoryIdentities": [
-            "%c"
-        ]
+        "CategoryTypesWithIdentities": [
+		{
+			"CategoryIdentities": [
+				"%c"
+			],
+			"CategoryTypeIdentity": "%t"
+		}
+	]
     }`,
-    typesPath: 'https://opentimetables.swan.ac.uk/broker/api/categoryTypeOptions',
-    typesExPath: 'https://opentimetables.swan.ac.uk/broker/api/categoryTypesExtended',
-    depsPath: 'https://opentimetables.swan.ac.uk/broker/api/CategoryTypes/%t/Categories/Filter?pageNumber=%n',
-    catsPath: 'https://opentimetables.swan.ac.uk/broker/api/CategoryTypes/%t/Categories/Filter?pageNumber=%n'
+    typesPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/UserCategoryTypeOptions/c0fafdf7-2aab-419e-a69b-bbb9e957303c?includeBookingAndPersonal=false',
+    typesExPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/CategoryTypesExtended/c0fafdf7-2aab-419e-a69b-bbb9e957303c?includeBookingAndPersonal=false',
+    depsPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/%t/Categories/FilterWithCache/c0fafdf7-2aab-419e-a69b-bbb9e957303c?pageNumber=%n',
+    catsPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/CategoryTypes/%t/Categories/FilterWithCache/c0fafdf7-2aab-419e-a69b-bbb9e957303c?pageNumber=%n&query='
 }
 
 function getStartOfWeek(offset = 0) {
@@ -52,7 +57,7 @@ app.get('/types', (req, res) => {
     axios(url, {
         method: 'get',
         headers: {
-            'Authorization': `basic ${api.auth}`,
+            'Authorization': `Anonymous`,
             'Content-Type': 'application/json'
         }
     })
@@ -69,7 +74,7 @@ app.get('/typesEx', (req, res) => {
     axios(url, {
         method: 'get',
         headers: {
-            'Authorization': `basic ${api.auth}`,
+            'Authorization': `Anonymous`,
             'Content-Type': 'application/json'
         }
     })
@@ -89,7 +94,7 @@ app.get('/cats/:type/:page', (req, res) => {
     axios(url, {
         method: 'post',
         headers: {
-            'Authorization': `basic ${api.auth}`,
+            'Authorization': `Anonymous`,
             'Content-Type': 'application/json'
         }
     })
@@ -103,12 +108,12 @@ app.get('/cats/:type/:page', (req, res) => {
 
 app.get('/:type/:cat/:weekOffset', (req, res) => {
     const url = api.categoryPath.replace('%c', req.params.type);
-    const body = api.categoryBody.replace('%c', req.params.cat).replace('%w', getStartOfWeek(parseInt(req.params.weekOffset) || 0).toISOString());
+    const body = api.categoryBody.replace('%c', req.params.cat).replace('%w', getStartOfWeek(parseInt(req.params.weekOffset) || 0).toISOString()).replace('%t', req.params.type);
 
     axios(url, {
         method: 'post',
         headers: {
-            'Authorization': `basic ${api.auth}`,
+            'Authorization': `Anonymous`,
             'Content-Type': 'application/json'
         },
         data: body
