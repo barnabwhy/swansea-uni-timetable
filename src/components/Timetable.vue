@@ -101,7 +101,7 @@ export default defineComponent({
     addExclude() {
       let val = (this.$refs['excludeInput'] as HTMLInputElement).value;
       (this.$refs['excludeInput'] as HTMLInputElement).value = "";
-      if(this.exclude.length == 0 || this.exclude.find((ex: string) => ex.toLowerCase() == val.toLowerCase()))
+      if(val.length == 0 || this.exclude.find((ex: string) => ex.toLowerCase() == val.toLowerCase()))
         return
       this.exclude.push(val);
       
@@ -167,7 +167,7 @@ export default defineComponent({
     })
 
     const params = new URLSearchParams(location.search);
-    this.exclude = (params.get('ex')?.split(",")) || [];
+    this.exclude = (params.get('ex')?.split(",")).filter(ex => ex.length != 0) || [];
     if(params.has('t') && params.has('c')) {
       this.page = 'timetable';
 
