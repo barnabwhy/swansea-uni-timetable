@@ -101,7 +101,7 @@ export default defineComponent({
     addExclude() {
       let val = (this.$refs['excludeInput'] as HTMLInputElement).value;
       (this.$refs['excludeInput'] as HTMLInputElement).value = "";
-      if(ex.length == 0 || this.exclude.find((ex: string) => ex.toLowerCase() == val.toLowerCase()))
+      if(this.exclude.length == 0 || this.exclude.find((ex: string) => ex.toLowerCase() == val.toLowerCase()))
         return
       this.exclude.push(val);
       
