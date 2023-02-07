@@ -167,7 +167,7 @@ export default defineComponent({
     })
 
     const params = new URLSearchParams(location.search);
-    this.exclude = (params.get('ex')?.split(",")).filter(ex => ex.length != 0) || [];
+    this.exclude = (params.get('ex')?.split(","))?.filter(ex => ex.length != 0) || [];
     if(params.has('t') && params.has('c')) {
       this.page = 'timetable';
 
