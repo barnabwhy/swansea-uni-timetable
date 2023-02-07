@@ -101,7 +101,7 @@ export default defineComponent({
     addExclude() {
       let val = (this.$refs['excludeInput'] as HTMLInputElement).value;
       (this.$refs['excludeInput'] as HTMLInputElement).value = "";
-      if(this.exclude.find((ex: string) => ex.toLowerCase() == val.toLowerCase()))
+      if(ex.length == 0 || this.exclude.find((ex: string) => ex.toLowerCase() == val.toLowerCase()))
         return
       this.exclude.push(val);
       
@@ -114,6 +114,8 @@ export default defineComponent({
 
       const params = new URLSearchParams(location.search);
       params.set('ex', this.exclude.join(','));
+      if(this.exclude.length == 0)
+        params.delete("ex");
       window.history.replaceState('', '', '?'+params.toString());
     },
     async loadTimetable() {
