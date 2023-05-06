@@ -5,6 +5,7 @@ const app = express()
 const port = 80
 
 const apicache = require("apicache");
+const fs = require("fs");
 
 app.use(cors())
 
@@ -14,17 +15,7 @@ app.use(cache('5 minutes'))
 const api = {
     auth: "kR1n1RXYhF",
     categoryPath: "https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/CategoryTypes/Categories/Events/Filter/c0fafdf7-2aab-419e-a69b-bbb9e957303c",
-    categoryBody: `{
-        "ViewOptions": { "Weeks": [ { "FirstDayInWeek": "%w" } ] },
-        "CategoryTypesWithIdentities": [
-		{
-			"CategoryIdentities": [
-				"%c"
-			],
-			"CategoryTypeIdentity": "%t"
-		}
-	]
-    }`,
+    categoryBody: fs.readFileSync('./catBody.json', { encoding: 'utf8', flag: 'r' }),
     typesPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/UserCategoryTypeOptions/c0fafdf7-2aab-419e-a69b-bbb9e957303c?includeBookingAndPersonal=false',
     typesExPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/CategoryTypesExtended/c0fafdf7-2aab-419e-a69b-bbb9e957303c?includeBookingAndPersonal=false',
     depsPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/%t/Categories/FilterWithCache/c0fafdf7-2aab-419e-a69b-bbb9e957303c?pageNumber=%n',
