@@ -23,7 +23,20 @@ const api = {
     catsPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/CategoryTypes/%t/Categories/FilterWithCache/c0fafdf7-2aab-419e-a69b-bbb9e957303c?pageNumber=%n&query='
 }
 
-api.weeks = api.categoryBody.ViewOptions.DatePeriods[0].Weeks;
+async function updatePeriods() {
+    let res = await fetch("https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/ViewOptions/c0fafdf7-2aab-419e-a69b-bbb9e957303c");
+    if (res && res.ok) {
+        let data = await res.json();
+        api.categoryBody.ViewOptions.DatePeriods = data.DatePeriods;
+        api.categoryBody.ViewOptions.TimePeriods = data.TimePeriods;
+        api.weeks = data.Weeks;
+        console.log("Fetched periods from server")
+    }
+}
+
+updatePeriods();
+
+setInterval(updatePeriods, 24*60*60*1000);
 
 function getStartOfWeek(offset = 0) {
     let d = new Date(Date.now() + 24 * 3600 * 1000 * 7 * offset);
@@ -132,7 +145,7 @@ app.get('/:type/:cat/week/:week', (req, res) => {
     const week = api.weeks.find(w => w.WeekNumber == (parseInt(req.params.week) || 0));
 
     const body = Object.assign({}, api.categoryBody);
-    body.ViewOptions.Weeks = [week];
+    body.ViewOptions.Weeks = [{ FirstDayInWeek: new Date(week.FirstDayInWeek).toISOString() }];
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
@@ -158,10 +171,9 @@ app.get('/:type/:cat/week/:week', (req, res) => {
 
 app.get('/:type/:cat', (req, res) => {
     const url = api.categoryPath;
-    const week = api.weeks.find(w => w.WeekNumber == (parseInt(req.params.week) || 0));
 
     const body = Object.assign({}, api.categoryBody);
-    body.ViewOptions.Weeks = body.ViewOptions.DatePeriods[0].Weeks;
+    body.ViewOptions.Weeks = api.weeks;
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
