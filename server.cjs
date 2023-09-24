@@ -98,7 +98,7 @@ app.get('/cats/:type/:page', (req, res) => {
 })
 
 app.get('/:type/:cat/:weekOffset', (req, res) => {
-    const url = api.categoryPath.replace('%c', req.params.type);
+    const url = api.categoryPath;
     const body = api.categoryBody.replace('%c', req.params.cat).replace('%w', getStartOfWeek(parseInt(req.params.weekOffset) || 0).toISOString()).replace('%t', req.params.type);
 
     axios(url, {
