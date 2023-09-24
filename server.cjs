@@ -132,7 +132,7 @@ app.get('/:type/:cat/week/:week', (req, res) => {
     const week = api.weeks.find(w => w.WeekNumber == (parseInt(req.params.week) || 0));
 
     const body = Object.assign({}, api.categoryBody);
-    body.ViewOptions.Weeks = [{ FirstDayInWeek: week.FirstDayInWeek }];
+    body.ViewOptions.Weeks = [week];
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
@@ -161,7 +161,7 @@ app.get('/:type/:cat', (req, res) => {
     const week = api.weeks.find(w => w.WeekNumber == (parseInt(req.params.week) || 0));
 
     const body = Object.assign({}, api.categoryBody);
-    body.ViewOptions.Weeks = body.ViewOptions.DatePeriods[0].Weeks.map(w => { return { FirstDayInWeek: w.FirstDayInWeek } });
+    body.ViewOptions.Weeks = body.ViewOptions.DatePeriods[0].Weeks;
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
