@@ -15,12 +15,15 @@ app.use(cache('5 minutes'))
 const api = {
     auth: "kR1n1RXYhF",
     categoryPath: "https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/CategoryTypes/Categories/Events/Filter/c0fafdf7-2aab-419e-a69b-bbb9e957303c",
-    categoryBody: fs.readFileSync('./catBody.json', { encoding: 'utf8', flag: 'r' }),
+    categoryBody: JSON.parse(fs.readFileSync('./catBody.json', { encoding: 'utf8', flag: 'r' })),
+    weeks: [],
     typesPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/UserCategoryTypeOptions/c0fafdf7-2aab-419e-a69b-bbb9e957303c?includeBookingAndPersonal=false',
     typesExPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/CategoryTypesExtended/c0fafdf7-2aab-419e-a69b-bbb9e957303c?includeBookingAndPersonal=false',
     depsPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/%t/Categories/FilterWithCache/c0fafdf7-2aab-419e-a69b-bbb9e957303c?pageNumber=%n',
     catsPath: 'https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/CategoryTypes/%t/Categories/FilterWithCache/c0fafdf7-2aab-419e-a69b-bbb9e957303c?pageNumber=%n&query='
 }
+
+api.weeks = api.categoryBody.ViewOptions.DatePeriods[0].Weeks;
 
 function getStartOfWeek(offset = 0) {
     let d = new Date(Date.now() + 24 * 3600 * 1000 * 7 * offset);
@@ -99,7 +102,14 @@ app.get('/cats/:type/:page', (req, res) => {
 
 app.get('/:type/:cat/:weekOffset', (req, res) => {
     const url = api.categoryPath;
-    const body = api.categoryBody.replace('%c', req.params.cat.split(',').map(c => c.trim()).join('\",\"')).replace('%w', getStartOfWeek(parseInt(req.params.weekOffset) || 0).toISOString()).replace('%t', req.params.type);
+    const body = Object.assign({}, api.categoryBody);
+    body.ViewOptions.Weeks = [{ FirstDayInWeek: getStartOfWeek(parseInt(req.params.weekOffset) || 0).toISOString() }];
+    body.CategoryTypesWithIdentities = [
+        {
+            CategoryTypeIdentity: req.params.type,
+            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim()).join('\",\"')]
+        }
+    ];
 
     axios(url, {
         method: 'post',
@@ -107,7 +117,65 @@ app.get('/:type/:cat/:weekOffset', (req, res) => {
             'Authorization': `Anonymous`,
             'Content-Type': 'application/json'
         },
-        data: body
+        data: JSON.stringify(body),
+    })
+    .then(function (response) {
+        res.send(response.data);
+    })
+    .catch(function (error) {
+        res.sendStatus(500);
+    })
+})
+
+app.get('/:type/:cat/week/:week', (req, res) => {
+    const url = api.categoryPath;
+    const week = api.weeks.find(w => w.WeekNumber == (parseInt(req.params.week) || 0));
+
+    const body = Object.assign({}, api.categoryBody);
+    body.ViewOptions.Weeks = [week];
+    body.CategoryTypesWithIdentities = [
+        {
+            CategoryTypeIdentity: req.params.type,
+            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim()).join('\",\"')]
+        }
+    ];
+
+    axios(url, {
+        method: 'post',
+        headers: {
+            'Authorization': `Anonymous`,
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(body),
+    })
+    .then(function (response) {
+        res.send(response.data);
+    })
+    .catch(function (error) {
+        res.sendStatus(500);
+    })
+})
+
+app.get('/:type/:cat', (req, res) => {
+    const url = api.categoryPath;
+    const week = api.weeks.find(w => w.WeekNumber == (parseInt(req.params.week) || 0));
+
+    const body = Object.assign({}, api.categoryBody);
+    body.ViewOptions.Weeks = body.ViewOptions.DatePeriods[0].Weeks;
+    body.CategoryTypesWithIdentities = [
+        {
+            CategoryTypeIdentity: req.params.type,
+            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim()).join('\",\"')]
+        }
+    ];
+
+    axios(url, {
+        method: 'post',
+        headers: {
+            'Authorization': `Anonymous`,
+            'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(body),
     })
     .then(function (response) {
         res.send(response.data);
