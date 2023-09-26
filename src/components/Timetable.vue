@@ -14,7 +14,7 @@ export default defineComponent({
       showDetails: false,
       detailsEvent: '',
       showSettings: false,
-      
+
       typesPath: "https://timetable.swansea.cymru/types",
       types: [] as any[],
       selectedType: '',
@@ -32,7 +32,7 @@ export default defineComponent({
       cats: [] as any[],
       catsFetchStartTime: 0,
       selectedCat: '',
-      
+
       page: 'types',
 
       weekOffset: 0,
@@ -40,7 +40,12 @@ export default defineComponent({
   },
   computed: {
     detailsEv() {
-      return this.res.CategoryEvents[0].Results.find((ev: any) => ev.EventIdentity == this.detailsEvent)
+      for(const category of this.res.CategoryEvents) {
+        for(const ev of category.Results) {
+          if (ev.EventIdentity == this.detailsEvent) return ev;
+        }
+      }
+      return null;
     }
   },
   methods: {
@@ -104,7 +109,7 @@ export default defineComponent({
       if(val.length == 0 || this.exclude.find((ex: string) => ex.toLowerCase() == val.toLowerCase()))
         return
       this.exclude.push(val);
-      
+
       const params = new URLSearchParams(location.search);
       params.set('ex', this.exclude.join(','));
       window.history.replaceState('', '', '?'+params.toString());
@@ -125,17 +130,17 @@ export default defineComponent({
       const type = params.get('t') || "";
       const cat = params.get('c') || "";
       this.res = await (await fetch(this.apiPath.replace('%t', type).replace('%c', cat).replace('%w', this.weekOffset))).json();
-      
+
       this.days = { 1: [], 2: [], 3: [], 4: [], 5: [] };
-      //for(const category of this.res) {
-        for(const event of this.res.CategoryEvents[0].Results) {
+      for(const category of this.res.CategoryEvents) {
+        for(const event of category.Results) {
           let day = new Date(event.StartDateTime).getDay();
           if(!this.days[day])
             this.days[day] = [];
 
           this.days[day].push(event);
         }
-      //}
+      }
       for(let day of Object.values(this.days)) {
         day = (day as any).sort((a: any, b: any) => { return new Date(a.StartDateTime).getTime() - new Date(b.StartDateTime).getTime() });
       }
@@ -301,7 +306,7 @@ h1 {
   100% {
     rotate: 360deg;
   }
-} 
+}
 
 .type {
   height: 128px;
