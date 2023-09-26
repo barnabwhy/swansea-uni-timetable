@@ -30,6 +30,7 @@ async function updatePeriods() {
         api.categoryBody.ViewOptions.DatePeriods = data.DatePeriods;
         api.categoryBody.ViewOptions.TimePeriods = data.TimePeriods;
         api.weeks = data.Weeks;
+        console.log(data);
         console.log("Fetched periods from server")
     }
 }
@@ -120,7 +121,7 @@ app.get('/:type/:cat/:weekOffset', (req, res) => {
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
-            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim())]
+            CategoryIdentities: req.params.cat.split(',').map(c => c.trim())
         }
     ];
 
@@ -149,7 +150,7 @@ app.get('/:type/:cat/week/:week', (req, res) => {
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
-            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim())]
+            CategoryIdentities: req.params.cat.split(',').map(c => c.trim())
         }
     ];
 
@@ -173,11 +174,11 @@ app.get('/:type/:cat', (req, res) => {
     const url = api.categoryPath;
 
     const body = Object.assign({}, api.categoryBody);
-    body.ViewOptions.Weeks = api.weeks;
+    // body.ViewOptions.Weeks = api.weeks;
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
-            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim())]
+            CategoryIdentities: req.params.cat.split(',').map(c => c.trim())
         }
     ];
 
