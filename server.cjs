@@ -36,7 +36,7 @@ async function updatePeriods() {
 
 updatePeriods();
 
-setInterval(updatePeriods, 24*60*60*1000);
+setInterval(updatePeriods, 24 * 60 * 60 * 1000);
 
 function getStartOfWeek(offset = 0) {
     let d = new Date(Date.now() + 24 * 3600 * 1000 * 7 * offset);
@@ -68,12 +68,12 @@ app.get('/types', (req, res) => {
             'Content-Type': 'application/json'
         }
     })
-    .then(function (response) {
-        res.send(response.data);
-    })
-    .catch(function (error) {
-        res.sendStatus(500);
-    })
+        .then(function (response) {
+            res.send(response.data);
+        })
+        .catch(function (error) {
+            res.sendStatus(500);
+        })
 })
 app.get('/typesEx', (req, res) => {
     const url = api.typesExPath;
@@ -85,12 +85,12 @@ app.get('/typesEx', (req, res) => {
             'Content-Type': 'application/json'
         }
     })
-    .then(function (response) {
-        res.send(response.data);
-    })
-    .catch(function (error) {
-        res.sendStatus(500);
-    })
+        .then(function (response) {
+            res.send(response.data);
+        })
+        .catch(function (error) {
+            res.sendStatus(500);
+        })
 })
 app.get('/deps/:type/:page', (req, res) => {
 
@@ -105,98 +105,179 @@ app.get('/cats/:type/:page', (req, res) => {
             'Content-Type': 'application/json'
         }
     })
-    .then(function (response) {
-        res.send(response.data);
-    })
-    .catch(function (error) {
-        res.sendStatus(500);
-    })
+        .then(function (response) {
+            res.send(response.data);
+        })
+        .catch(function (error) {
+            res.sendStatus(500);
+        })
 })
 
-app.get('/:type/:cat/:weekOffset', (req, res) => {
+app.get('/:type/:cat/:weekOffset', async (req, res) => {
     const url = api.categoryPath;
     const body = Object.assign({}, api.categoryBody);
     body.ViewOptions.Weeks = [{ FirstDayInWeek: getStartOfWeek(parseInt(req.params.weekOffset) || 0).toISOString() }];
-    body.CategoryTypesWithIdentities = [
-        {
-            CategoryTypeIdentity: req.params.type,
-            CategoryIdentities: req.params.cat.split(',').map(c => c.trim())
-        }
-    ];
 
-    axios(url, {
-        method: 'post',
-        headers: {
-            'Authorization': `Anonymous`,
-            'Content-Type': 'application/json'
-        },
-        data: JSON.stringify(body),
-    })
-    .then(function (response) {
-        res.send(response.data);
-    })
-    .catch(function (error) {
-        res.sendStatus(500);
-    })
+    let cats = req.params.cat.split(',').map(c => c.trim());
+    let data = { CategoryEvents: null, BookingRequests: null, PersonalEvents: null };
+    for (const catWin of cats.chunk(4)) {
+        body.CategoryTypesWithIdentities = [
+            {
+                CategoryTypeIdentity: req.params.type,
+                CategoryIdentities: catWin,
+            }
+        ];
+
+        try {
+            let response = await axios(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Anonymous`,
+                    'Content-Type': 'application/json',
+                },
+                data: JSON.stringify(body),
+            });
+
+            if (response.data.CategoryEvents) {
+                if (!data.CategoryEvents)
+                    data.CategoryEvents = [];
+
+                data.CategoryEvents.push(...response.data.CategoryEvents);
+            }
+            if (response.data.BookingRequests) {
+                if (!data.BookingRequests)
+                    data.BookingRequests = [];
+
+                data.BookingRequests.push(...response.data.BookingRequests);
+            }
+            if (response.data.PersonalEvents) {
+                if (!data.PersonalEvents)
+                    data.PersonalEvents = [];
+
+                data.PersonalEvents.push(...response.data.PersonalEvents);
+            }
+        } catch(error) {
+            return res.sendStatus(500);
+        }
+    }
+
+    res.send(data);
 })
 
-app.get('/:type/:cat/week/:week', (req, res) => {
+app.get('/:type/:cat/week/:week', async (req, res) => {
     const url = api.categoryPath;
     const week = api.weeks.find(w => w.WeekNumber == (parseInt(req.params.week) || 0));
 
     const body = Object.assign({}, api.categoryBody);
     body.ViewOptions.Weeks = [{ FirstDayInWeek: new Date(week.FirstDayInWeek).toISOString() }];
-    body.CategoryTypesWithIdentities = [
-        {
-            CategoryTypeIdentity: req.params.type,
-            CategoryIdentities: req.params.cat.split(',').map(c => c.trim())
-        }
-    ];
 
-    axios(url, {
-        method: 'post',
-        headers: {
-            'Authorization': `Anonymous`,
-            'Content-Type': 'application/json'
-        },
-        data: JSON.stringify(body),
-    })
-    .then(function (response) {
-        res.send(response.data);
-    })
-    .catch(function (error) {
-        res.sendStatus(500);
-    })
+    let cats = req.params.cat.split(',').map(c => c.trim());
+    let data = { CategoryEvents: null, BookingRequests: null, PersonalEvents: null };
+    for (const catWin of cats.chunk(4)) {
+        body.CategoryTypesWithIdentities = [
+            {
+                CategoryTypeIdentity: req.params.type,
+                CategoryIdentities: catWin,
+            }
+        ];
+
+        try {
+            let response = await axios(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Anonymous`,
+                    'Content-Type': 'application/json',
+                },
+                data: JSON.stringify(body),
+            });
+
+            if (response.data.CategoryEvents) {
+                if (!data.CategoryEvents)
+                    data.CategoryEvents = [];
+
+                data.CategoryEvents.push(...response.data.CategoryEvents);
+            }
+            if (response.data.BookingRequests) {
+                if (!data.BookingRequests)
+                    data.BookingRequests = [];
+
+                data.BookingRequests.push(...response.data.BookingRequests);
+            }
+            if (response.data.PersonalEvents) {
+                if (!data.PersonalEvents)
+                    data.PersonalEvents = [];
+
+                data.PersonalEvents.push(...response.data.PersonalEvents);
+            }
+        } catch(error) {
+            return res.sendStatus(500);
+        }
+    }
+
+    res.send(data);
 })
 
-app.get('/:type/:cat', (req, res) => {
+app.get('/:type/:cat', async (req, res) => {
     const url = api.categoryPath;
 
     const body = Object.assign({}, api.categoryBody);
-    // body.ViewOptions.Weeks = api.weeks;
-    body.CategoryTypesWithIdentities = [
-        {
-            CategoryTypeIdentity: req.params.type,
-            CategoryIdentities: req.params.cat.split(',').map(c => c.trim())
-        }
-    ];
+    body.ViewOptions.Weeks = api.weeks;
 
-    axios(url, {
-        method: 'post',
-        headers: {
-            'Authorization': `Anonymous`,
-            'Content-Type': 'application/json'
-        },
-        data: JSON.stringify(body),
-    })
-    .then(function (response) {
-        res.send(response.data);
-    })
-    .catch(function (error) {
-        res.sendStatus(500);
-    })
+    let cats = req.params.cat.split(',').map(c => c.trim());
+    let data = { CategoryEvents: null, BookingRequests: null, PersonalEvents: null };
+    for (const catWin of cats.chunk(4)) {
+        body.CategoryTypesWithIdentities = [
+            {
+                CategoryTypeIdentity: req.params.type,
+                CategoryIdentities: catWin,
+            }
+        ];
+
+        try {
+            let response = await axios(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Anonymous`,
+                    'Content-Type': 'application/json',
+                },
+                data: JSON.stringify(body),
+            });
+
+            if (response.data.CategoryEvents) {
+                if (!data.CategoryEvents)
+                    data.CategoryEvents = [];
+
+                data.CategoryEvents.push(...response.data.CategoryEvents);
+            }
+            if (response.data.BookingRequests) {
+                if (!data.BookingRequests)
+                    data.BookingRequests = [];
+
+                data.BookingRequests.push(...response.data.BookingRequests);
+            }
+            if (response.data.PersonalEvents) {
+                if (!data.PersonalEvents)
+                    data.PersonalEvents = [];
+
+                data.PersonalEvents.push(...response.data.PersonalEvents);
+            }
+        } catch(error) {
+            return res.sendStatus(500);
+        }
+    }
+
+    res.send(data);
 })
 
 app.listen(port, () => {
-  console.log(`Timetable server listening on port ${port}`)
+    console.log(`Timetable server listening on port ${port}`)
 })
+
+Object.defineProperty(Array.prototype, 'chunk', {
+    value: function(chunkSize) {
+      var R = [];
+      for (var i = 0; i < this.length; i += chunkSize)
+        R.push(this.slice(i, i + chunkSize));
+      return R;
+    }
+  });
