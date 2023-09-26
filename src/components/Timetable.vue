@@ -4,7 +4,7 @@ import { defineComponent } from "vue";
 export default defineComponent({
   data() {
     return {
-      apiPath: "https://swansea.doesnt-like.me/%t/%c/%w",
+      apiPath: "https://timetable.swansea.cymru/%t/%c/%w",
       res: [] as any[],
       days: {} as { [key: number]: any },
       exclude: [] as string[],
@@ -15,20 +15,20 @@ export default defineComponent({
       detailsEvent: '',
       showSettings: false,
       
-      typesPath: "https://swansea.doesnt-like.me/types",
+      typesPath: "https://timetable.swansea.cymru/types",
       types: [] as any[],
       selectedType: '',
 
-      typesExPath: "https://swansea.doesnt-like.me/typesEx",
+      typesExPath: "https://timetable.swansea.cymru/typesEx",
       typesEx: [] as any[],
 
       depSearch: '',
-      depsPath: "https://swansea.doesnt-like.me/cats/%t/%n",
+      depsPath: "https://timetable.swansea.cymru/cats/%t/%n",
       deps: [] as any[],
       selectedDep: '',
 
       catSearch: '',
-      catsPath: "https://swansea.doesnt-like.me/cats/%t/%n",
+      catsPath: "https://timetable.swansea.cymru/cats/%t/%n",
       cats: [] as any[],
       catsFetchStartTime: 0,
       selectedCat: '',
