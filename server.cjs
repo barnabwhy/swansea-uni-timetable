@@ -30,7 +30,6 @@ async function updatePeriods() {
         api.categoryBody.ViewOptions.DatePeriods = data.DatePeriods;
         api.categoryBody.ViewOptions.TimePeriods = data.TimePeriods;
         api.weeks = data.Weeks;
-        console.log(data);
         console.log("Fetched periods from server")
     }
 }
