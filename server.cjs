@@ -120,7 +120,7 @@ app.get('/:type/:cat/:weekOffset', (req, res) => {
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
-            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim()).join('\",\"')]
+            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim())]
         }
     ];
 
@@ -149,7 +149,7 @@ app.get('/:type/:cat/week/:week', (req, res) => {
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
-            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim()).join('\",\"')]
+            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim())]
         }
     ];
 
@@ -177,7 +177,7 @@ app.get('/:type/:cat', (req, res) => {
     body.CategoryTypesWithIdentities = [
         {
             CategoryTypeIdentity: req.params.type,
-            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim()).join('\",\"')]
+            CategoryIdentities: [req.params.cat.split(',').map(c => c.trim())]
         }
     ];
 
