@@ -1,10 +1,13 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 
+// const API_BASE = "http://localhost";
+const API_BASE = "https://timetable.swansea.cymru";
+
 export default defineComponent({
   data() {
     return {
-      apiPath: "https://timetable.swansea.cymru/%t/%c/%w",
+      apiPath: API_BASE + "/%t/%c/%w",
       res: [] as any[],
       days: {} as { [key: number]: any },
       exclude: [] as string[],
@@ -15,20 +18,20 @@ export default defineComponent({
       detailsEvent: '',
       showSettings: false,
 
-      typesPath: "https://timetable.swansea.cymru/types",
+      typesPath: API_BASE + "/types",
       types: [] as any[],
       selectedType: '',
 
-      typesExPath: "https://timetable.swansea.cymru/typesEx",
+      typesExPath: API_BASE + "/typesEx",
       typesEx: [] as any[],
 
       depSearch: '',
-      depsPath: "https://timetable.swansea.cymru/cats/%t/%n",
+      depsPath: API_BASE + "/cats/%t/%n",
       deps: [] as any[],
       selectedDep: '',
 
       catSearch: '',
-      catsPath: "https://timetable.swansea.cymru/cats/%t/%n",
+      catsPath: API_BASE + "/cats/%t/%n",
       cats: [] as any[],
       catsFetchStartTime: 0,
       selectedCat: '',

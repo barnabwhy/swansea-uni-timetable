@@ -10,7 +10,7 @@ const fs = require("fs");
 app.use(cors())
 
 let cache = apicache.middleware
-app.use(cache('5 minutes'))
+// app.use(cache('5 minutes'))
 
 const api = {
     auth: "kR1n1RXYhF",
@@ -58,8 +58,25 @@ app.get('/', (req, res) => {
     res.status(200);
 })
 
+// Meta cache stores information such as types and categories
+const META_CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+const metaCache = {
+    types: {
+        lastUpdated: 0,
+        data: null,
+    },
+    typesEx: {
+        lastUpdated: 0,
+        data: null,
+    },
+    cats: {},
+};
+
 app.get('/types', (req, res) => {
     const url = api.typesPath;
+
+    if (metaCache.types.data && Date.now() - metaCache.types.lastUpdated < META_CACHE_EXPIRY)
+        return res.send(metaCache.types.data);
 
     axios(url, {
         method: 'get',
@@ -69,6 +86,9 @@ app.get('/types', (req, res) => {
         }
     })
         .then(function (response) {
+            metaCache.types.data = response.data;
+            metaCache.types.lastUpdated = Date.now();
+
             res.send(response.data);
         })
         .catch(function (error) {
@@ -78,6 +98,9 @@ app.get('/types', (req, res) => {
 app.get('/typesEx', (req, res) => {
     const url = api.typesExPath;
 
+    if (metaCache.typesEx.data && Date.now() - metaCache.typesEx.lastUpdated < META_CACHE_EXPIRY)
+        return res.send(metaCache.typesEx.data);
+
     axios(url, {
         method: 'get',
         headers: {
@@ -86,6 +109,9 @@ app.get('/typesEx', (req, res) => {
         }
     })
         .then(function (response) {
+            metaCache.typesEx.data = response.data;
+            metaCache.typesEx.lastUpdated = Date.now();
+
             res.send(response.data);
         })
         .catch(function (error) {
@@ -95,22 +121,44 @@ app.get('/typesEx', (req, res) => {
 app.get('/deps/:type/:page', (req, res) => {
 
 })
-app.get('/cats/:type/:page', (req, res) => {
-    const url = api.catsPath.replace('%t', req.params.type).replace('%n', req.params.page);
+app.get('/cats/:type/:page', async (req, res) => {
+    if (metaCache.cats[req.params.type] && metaCache.cats[req.params.type][req.params.page] && metaCache.cats[req.params.type][req.params.page].data && Date.now() - metaCache.cats[req.params.type][req.params.page].lastUpdated < META_CACHE_EXPIRY)
+        return res.send(metaCache.cats[req.params.type][req.params.page].data);
 
-    axios(url, {
-        method: 'post',
-        headers: {
-            'Authorization': `Anonymous`,
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(function (response) {
-            res.send(response.data);
-        })
-        .catch(function (error) {
-            res.sendStatus(500);
-        })
+    try {
+        const response = await getTransformedCats(req.params.type, req.params.page);
+
+        if (!metaCache.cats[req.params.type]) metaCache.cats[req.params.type] = {};
+        if (!metaCache.cats[req.params.type][req.params.page]) metaCache.cats[req.params.type][req.params.page] = {};
+
+        metaCache.cats[req.params.type][req.params.page].data = response;
+        metaCache.cats[req.params.type][req.params.page].lastUpdated = Date.now();
+
+        res.send(response);
+    } catch (e) {
+        console.log(e)
+        res.sendStatus(500);
+    }
+
+    // axios(url, {
+    //     method: 'post',
+    //     headers: {
+    //         'Authorization': `Anonymous`,
+    //         'Content-Type': 'application/json'
+    //     }
+    // })
+    //     .then(function (response) {
+    //         if(!metaCache.cats[req.params.type]) metaCache.cats[req.params.type] = {};
+    //         if(!metaCache.cats[req.params.type][req.params.page]) metaCache.cats[req.params.type][req.params.page] = {};
+
+    //         metaCache.cats[req.params.type][req.params.page].data = response.data;
+    //         metaCache.cats[req.params.type][req.params.page].lastUpdated = Date.now();
+
+    //         res.send(response.data);
+    //     })
+    //     .catch(function (error) {
+    //         res.sendStatus(500);
+    //     })
 })
 
 app.get('/:type/:cat/:weekOffset', async (req, res) => {
@@ -156,7 +204,7 @@ app.get('/:type/:cat/:weekOffset', async (req, res) => {
 
                 data.PersonalEvents.push(...response.data.PersonalEvents);
             }
-        } catch(error) {
+        } catch (error) {
             return res.sendStatus(500);
         }
     }
@@ -209,7 +257,7 @@ app.get('/:type/:cat/week/:week', async (req, res) => {
 
                 data.PersonalEvents.push(...response.data.PersonalEvents);
             }
-        } catch(error) {
+        } catch (error) {
             return res.sendStatus(500);
         }
     }
@@ -261,7 +309,7 @@ app.get('/:type/:cat', async (req, res) => {
 
                 data.PersonalEvents.push(...response.data.PersonalEvents);
             }
-        } catch(error) {
+        } catch (error) {
             return res.sendStatus(500);
         }
     }
@@ -274,10 +322,96 @@ app.listen(port, () => {
 })
 
 Object.defineProperty(Array.prototype, 'chunk', {
-    value: function(chunkSize) {
-      var R = [];
-      for (var i = 0; i < this.length; i += chunkSize)
-        R.push(this.slice(i, i + chunkSize));
-      return R;
+    value: function (chunkSize) {
+        var R = [];
+        for (var i = 0; i < this.length; i += chunkSize)
+            R.push(this.slice(i, i + chunkSize));
+        return R;
     }
-  });
+});
+
+async function getTransformedCats(type, page) {
+    let initResp = await fetch(api.catsPath.replace('%t', type).replace('%n', 1), {
+        method: 'POST',
+        headers: {
+            'Authorization': `Anonymous`,
+            'Content-Type': 'application/json',
+        },
+    });
+
+    let initData = await initResp.json();
+
+    // we transform pages to ~100 results because it makes things faster
+    let maxResults = 100;
+
+    let results = [];
+    let totalResults = 0;
+
+    const pageTransformFactor = Math.ceil(maxResults / initData.Results.length);
+    let currentPage = (parseInt(page) - 1) * pageTransformFactor + 1;
+    let maxToFetch = Math.min(maxResults, initData.Count - (currentPage - 1) * initData.Results.length);
+
+    while (results.length < maxToFetch) {
+        const url = api.catsPath.replace('%t', type).replace('%n', currentPage);
+        let resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Anonymous`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        let data = await resp.json();
+
+        results = results.concat(data.Results)
+        totalResults = data.Count;
+
+        currentPage++;
+    }
+
+    return {
+        TotalPages: Math.ceil(totalResults / maxResults),
+        CurrentPage: parseInt(page),
+        Results: results,
+        Count: totalResults,
+    };
+}
+
+async function precacheAllTypesCats() {
+    let typesRes = await fetch(api.typesPath);
+    let typesData = await typesRes.json();
+
+    for (const type of typesData) {
+        precacheCats(type.CategoryTypeId);
+    }
+}
+
+precacheAllTypesCats();
+setInterval(precacheAllTypesCats, 12 * 60 * 60 * 1000); // Run every 12 hours
+
+async function precacheCats(type) {
+    let startTime = Date.now();
+    console.log(`Started precaching cats of type "${type}"`);
+
+    let page = 1;
+    let totalPages = 1;
+    let totalFetched = 0;
+    let totalResults = 0;
+
+    while (page <= totalPages) {
+        let res = await getTransformedCats(type, page);
+
+        if (!metaCache.cats[type]) metaCache.cats[type] = {};
+        if (!metaCache.cats[type][page]) metaCache.cats[type][page] = {};
+
+        metaCache.cats[type][page].data = res;
+        metaCache.cats[type][page].lastUpdated = Date.now();
+
+        totalPages = res.TotalPages;
+        totalFetched += res.Results.length;
+        totalResults = res.Count;
+        page++;
+    }
+
+    console.log(`Finished precaching cats of type "${type}" in ${(Date.now() - startTime) / 1000}s | Pages: ${totalPages}, Fetched: ${totalFetched}/${totalResults}`);
+}
