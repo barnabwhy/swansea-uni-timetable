@@ -43,7 +43,7 @@ function getStartOfWeek(offset = 0) {
     const day = d.getDay();
 
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    d.setUTCHours(0, 0, 0, 0);
+    d.setHours(0, 0, 0, 0);
 
     return new Date(d.setDate(diff));
 }
