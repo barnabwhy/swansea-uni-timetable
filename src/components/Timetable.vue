@@ -1,8 +1,8 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 
-const API_BASE = "http://localhost";
-// const API_BASE = "https://timetable.swansea.cymru";
+// const API_BASE = "http://localhost";
+const API_BASE = "https://timetable.swansea.cymru";
 
 export default defineComponent({
   data() {
