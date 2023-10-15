@@ -38,12 +38,22 @@ updatePeriods();
 
 setInterval(updatePeriods, 24 * 60 * 60 * 1000);
 
+Date.prototype.stdTimezoneOffset = function () {
+    var jan = new Date(this.getFullYear(), 0, 1);
+    var jul = new Date(this.getFullYear(), 6, 1);
+    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
+
+Date.prototype.isDstObserved = function () {
+    return this.getTimezoneOffset() < this.stdTimezoneOffset();
+}
+
 function getStartOfWeek(offset = 0) {
     let d = new Date(Date.now() + 24 * 3600 * 1000 * 7 * offset);
     const day = d.getDay();
 
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    d.setHours(0, 0, 0, 0);
+    d.setUTCHours(d.isDstObserved() ? -1 : 0, 0, 0, 0);
 
     return new Date(d.setDate(diff));
 }
