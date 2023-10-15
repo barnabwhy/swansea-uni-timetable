@@ -54,8 +54,11 @@ function getStartOfWeek(offset = 0) {
 
     const diff = d.getDate() - day + (day === 0 ? -6 : 1);
     d.setUTCHours(d.isDstObserved() ? 1 : 0, 0, 0, 0);
+    d.setDate(diff)
 
-    return new Date(d.setDate(diff));
+    console.log(d);
+
+    return d;
 }
 
 const path = require('path');
