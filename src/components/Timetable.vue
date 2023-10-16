@@ -247,7 +247,7 @@ export default defineComponent({
 
     <div class="details" :class="{ show: showDetails || showSettings }">
       <span class="material-icons close" @click="showDetails = false; showSettings = false">close</span>
-      <template v-if="detailsEvent != '' && !showSettings">
+      <template v-if="detailsEvent != '' && !showSettings && detailsEv">
           <p class="name">{{ detailsEv.Name }}</p>
           <p class="evType item"><span class="material-icons">event</span>{{ detailsEv.EventType }}</p>
           <p class="time item"><span class="material-icons">schedule</span>{{ dayString(new Date(detailsEv.StartDateTime).getDay()) }} {{ getTime(detailsEv.StartDateTime) }}-{{ getTime(detailsEv.EndDateTime) }}</p>
