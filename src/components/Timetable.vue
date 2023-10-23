@@ -4,10 +4,13 @@ import { defineComponent } from "vue";
 // const API_BASE = "http://localhost";
 const API_BASE = "https://timetable.swansea.cymru";
 
+const AUTO_RELOAD_TIME = 15 * 60 * 1000; // 15 minutes
+
 export default defineComponent({
   data() {
     return {
       apiPath: API_BASE + "/%t/%c/%w",
+      lastFetch: 0,
       res: [] as any[],
       days: {} as { [key: number]: any },
       exclude: [] as string[],
@@ -148,6 +151,7 @@ export default defineComponent({
         day = (day as any).sort((a: any, b: any) => { return new Date(a.StartDateTime).getTime() - new Date(b.StartDateTime).getTime() });
       }
 
+      this.lastFetch = Date.now();
       this.loading = false;
     },
     prevWeek() {
@@ -173,6 +177,11 @@ export default defineComponent({
         this.showSettings = false;
       }
     })
+
+    setInterval(() => {
+      if(this.lastFetch < Date.now() - AUTO_RELOAD_TIME)
+        this.loadTimetable();
+    }, 30 * 1000); // check every 30 seconds
 
     const params = new URLSearchParams(location.search);
     this.exclude = (params.get('ex')?.split(","))?.filter(ex => ex.length != 0) || [];
