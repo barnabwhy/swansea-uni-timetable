@@ -381,11 +381,15 @@ async function getTransformedCats(type, page) {
 }
 
 async function precacheAllTypesCats() {
-    let typesRes = await fetch(api.typesPath);
-    let typesData = await typesRes.json();
+    try {
+        let typesRes = await fetch(api.typesPath);
+        let typesData = await typesRes.json();
 
-    for (const type of typesData) {
-        precacheCats(type.CategoryTypeId);
+        for (const type of typesData) {
+            precacheCats(type.CategoryTypeId);
+        }
+    } catch(e) {
+        console.log("Failed to precache types/cats: ", e)
     }
 }
 
