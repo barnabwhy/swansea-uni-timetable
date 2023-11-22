@@ -354,18 +354,20 @@ async function getTransformedCats(type, page) {
 
     while (results.length < maxToFetch) {
         const url = api.catsPath.replace('%t', type).replace('%n', currentPage);
-        let resp = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Anonymous`,
-                'Content-Type': 'application/json',
-            },
-        });
+        try {
+            let resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Anonymous`,
+                    'Content-Type': 'application/json',
+                },
+            });
 
-        let data = await resp.json();
+            let data = await resp.json();
 
-        results = results.concat(data.Results)
-        totalResults = data.Count;
+            results = results.concat(data.Results)
+            totalResults = data.Count;
+        } catch(e) { }
 
         currentPage++;
     }
