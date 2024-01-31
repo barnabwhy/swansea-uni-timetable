@@ -2,6 +2,7 @@
 
 # Build frontend
 cd frontend
+yarn
 yarn run build
 
 cd ..
@@ -13,6 +14,7 @@ set +a
 
 # Serve backend & frontend
 cd backend
+yarn
 
 dev="dev"
 if [[ "$1" == "$dev" ]]; then
