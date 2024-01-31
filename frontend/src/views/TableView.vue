@@ -35,7 +35,7 @@ async function fetchWeekEvents() {
     fetching.value = true;
 
     try {
-        let res = await fetch(API_BASE + `${type}/${cat}/${weekOffset.value}`);
+        let res = await fetch(API_BASE + `${type}/${cat}/start/${getStartOfWeek(weekOffset.value).getTime()}`);
 
         if (res && res.ok) {
             let data = await res.json();

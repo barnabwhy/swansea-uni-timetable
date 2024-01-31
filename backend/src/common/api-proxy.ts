@@ -275,6 +275,16 @@ export async function getWeekNumberCatEvents(type: string, cat: string, week: nu
     return getCatEventsWithBody(type, cat, body);
 }
 
+export async function getWeekStartCatEvents(type: string, cat: string, weekStart: number): Promise<EventsList> {
+    if (!apiData.categoryBody)
+        throw new APIError(ErrorType.REQUEST_FAILED, "Not yet initialised");
+
+    const body = Object.assign({}, apiData.categoryBody);
+    body.ViewOptions.Weeks = [{ FirstDayInWeek: new Date(weekStart).toISOString() }];
+
+    return getCatEventsWithBody(type, cat, body);
+}
+
 async function getCatEventsWithBody(type: string, cat: string, body: { [key: string]: any }): Promise<EventsList> {
     let cats = cat.split(',').map(c => c.trim());
     let result = { CategoryEvents: null, BookingRequests: null, PersonalEvents: null };

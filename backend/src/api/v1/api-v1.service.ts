@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getTypesList, getTypesExList, getCatsList, getAllCatEvents, getWeekOffsetCatEvents, getWeekNumberCatEvents } from 'src/common/api-proxy';
+import { getTypesList, getTypesExList, getCatsList, getAllCatEvents, getWeekOffsetCatEvents, getWeekNumberCatEvents, getWeekStartCatEvents } from 'src/common/api-proxy';
 
 @Injectable()
 export class ApiV1Service {
@@ -29,5 +29,9 @@ export class ApiV1Service {
 
   getWeekNumberEvents(type: string, cat: string, week: number) {
     return getWeekNumberCatEvents(type, cat, week);
+  }
+
+  getWeekStartEvents(type: string, cat: string, weekStart: number) {
+    return getWeekStartCatEvents(type, cat, weekStart);
   }
 }

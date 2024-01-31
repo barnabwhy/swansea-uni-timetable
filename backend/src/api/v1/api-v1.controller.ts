@@ -48,4 +48,10 @@ export class ApiV1Controller {
   getWeekNumberEvents(@Param('type') type, @Param('cat') cat, @Param('week') week) {
     return this.apiService.getWeekNumberEvents(type, cat, week);
   }
+
+  @Get(':type/:cat/start/:weekStart')
+  @Header('Cache-Control', 'public, max-age=300')
+  getWeekStartEvents(@Param('type') type, @Param('cat') cat, @Param('weekStart') weekStart) {
+    return this.apiService.getWeekStartEvents(type, cat, parseInt(weekStart));
+  }
 }
