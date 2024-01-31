@@ -27,6 +27,8 @@ import router from '@/router';
 <style scoped>
 main {
     padding: 2rem;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .type-button-fallback {
