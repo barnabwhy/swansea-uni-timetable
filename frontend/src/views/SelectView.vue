@@ -120,7 +120,7 @@ aside {
     border-radius: 50%;
     width: 1.5rem;
     height: 1.5rem;
-    background: url(img/help-dark.svg) center / cover no-repeat;
+    background: url(/img/help-dark.svg) center / cover no-repeat;
     padding: 0;
     border: 0;
     float: right;
@@ -159,7 +159,7 @@ aside {
 
 @media (prefers-color-scheme: light) {
     .help-button {
-        background: url(img/help-light.svg) center / cover no-repeat;
+        background: url(/img/help-light.svg) center / cover no-repeat;
     }
 }
 
@@ -199,21 +199,21 @@ summary::before {
     height: 1em;
     vertical-align: text-bottom;
     margin-right: 0.5rem;
-    background: url(img/expand-dark.svg) center / cover no-repeat;
+    background: url(/img/expand-dark.svg) center / cover no-repeat;
 }
 
 details[open] summary::before {
     vertical-align: text-top;
-    background: url(img/collapse-dark.svg) center / cover no-repeat;
+    background: url(/img/collapse-dark.svg) center / cover no-repeat;
 }
 
 
 @media (prefers-color-scheme: light) {
     summary::before {
-        background: url(img/expand-light.svg) center / cover no-repeat;
+        background: url(/img/expand-light.svg) center / cover no-repeat;
     }
     details[open] summary::before {
-        background: url(img/collapse-light.svg) center / cover no-repeat;
+        background: url(/img/collapse-light.svg) center / cover no-repeat;
     }
 }
 
