@@ -79,7 +79,7 @@ function filterToDay(events: TimetableEvent[], day: number): TimetableEvent[] {
 
 <template>
     <main>
-        <h1>Week commencing {{ getStartOfWeek(weekOffset).toLocaleDateString() }}</h1>
+        <h1>Week of {{ getStartOfWeek(weekOffset).toLocaleDateString() }}</h1>
         <!-- <span class="material-icons settings" @click="showSettings = true">settings</span> -->
         <span class="material-icons prevWeek" @click="prevWeek()">chevron_left</span>
         <span class="material-icons nextWeek" @click="nextWeek()">chevron_right</span>
@@ -183,8 +183,7 @@ main {
 }
 
 h1 {
-    margin-right: 132px;
-    margin: 2rem 0 0 2rem;
+    margin: 2rem 8rem 0 2rem;
     line-height: 1.25;
 }
 
