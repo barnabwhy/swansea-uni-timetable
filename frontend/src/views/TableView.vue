@@ -73,7 +73,8 @@ function eventsArray(events: EventsList): TimetableEvent[] {
 }
 
 function filterToDay(events: TimetableEvent[], day: number): TimetableEvent[] {
-    return events.filter(e => (new Date(e.StartDateTime).getDay() - 1 % 7) == day);
+    return events.filter(e => (new Date(e.StartDateTime).getDay() - 1 % 7) == day)
+        .sort((a, b) => new Date(a.StartDateTime).getTime() - new Date(b.StartDateTime).getTime());
 }
 </script>
 
