@@ -19,6 +19,7 @@ let weekOffsetChangedAt = ref(Date.now());
 let lastFetch = ref(0);
 
 let fetching = ref(false);
+let failed = ref(false);
 
 async function fetchWeekEvents() {
     if (!type || !cat)
@@ -30,14 +31,24 @@ async function fetchWeekEvents() {
     }
 
     let usedWeekOffset = weekOffset.value;
+    failed.value = false;
     fetching.value = true;
 
-    let res = await fetch(API_BASE + `${type}/${cat}/${weekOffset.value}`);
-    let data = await res.json();
+    try {
+        let res = await fetch(API_BASE + `${type}/${cat}/${weekOffset.value}`);
 
-    if (weekOffset.value == usedWeekOffset) {
-        events.value = data;
-        lastFetch.value = Date.now();
+        if (res && res.ok) {
+            let data = await res.json();
+
+            if (weekOffset.value == usedWeekOffset) {
+                events.value = data;
+                lastFetch.value = Date.now();
+            }
+        } else {
+            failed.value = true;
+        }
+    } catch(e) {
+        failed.value = true;
     }
 
     fetching.value = false;
@@ -84,7 +95,7 @@ function filterToDay(events: TimetableEvent[], day: number): TimetableEvent[] {
         <!-- <span class="material-icons settings" @click="showSettings = true">settings</span> -->
         <span class="material-icons prevWeek" @click="prevWeek()">chevron_left</span>
         <span class="material-icons nextWeek" @click="nextWeek()">chevron_right</span>
-        <div class="timetable" v-if="!fetching && events != null">
+        <div class="timetable" v-if="!fetching && events != null && !failed">
             <template v-for="(_, day) in 7">
                 <div class="day" v-if="filterToDay(eventsArray(events), day).length > 0 || day < 5">
                     <b>{{ DAY_STRINGS[day] }}</b>
@@ -107,6 +118,7 @@ function filterToDay(events: TimetableEvent[], day: number): TimetableEvent[] {
             </template>
         </div>
         <span class="loader" :class="{ visible: fetching }"></span>
+        <span class="failure" v-if="!fetching && failed"><b>Failed to load timetable data.</b><br>Are you offline?</span>
 
         <!-- <div class="details" :class="{ show: showDetails || showSettings }">
             <span class="material-icons close" @click="showDetails = false; showSettings = false">close</span>
@@ -137,8 +149,9 @@ main {
     height: 100%;
     overflow-y: auto;
     user-select: none;
+    display: grid;
+    grid-template-rows: auto 1fr;
 }
-
 
 .loader {
     position: fixed;
@@ -173,6 +186,10 @@ main {
     opacity: 1;
 }
 
+.failure {
+    margin: 0 2rem;
+}
+
 @keyframes rotation {
     0% {
         rotate: 0deg;
@@ -184,7 +201,7 @@ main {
 }
 
 h1 {
-    margin: 2rem 8rem 0 2rem;
+    margin: 2rem 8rem 1rem 2rem;
     line-height: 1.25;
 }
 
@@ -198,22 +215,21 @@ h1 {
 .timetable {
     display: flex;
     align-items: left;
+    gap: 0.5rem;
     width: 100%;
     overflow: auto;
-    height: calc(100% - 4.5rem);
     padding: 0 2rem 2rem 2rem;
 }
 
 .day {
     max-height: 100%;
     flex: 1;
-    margin: 4px;
 }
 
 .event {
     height: 128px;
     box-sizing: border-box;
-    margin: 8px 0px;
+    margin: 0.5rem 0px;
     background: var(--color-background-soft);
     padding: 8px;
     border-radius: 4px;
