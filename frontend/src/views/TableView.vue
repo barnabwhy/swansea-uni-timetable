@@ -7,7 +7,7 @@ import type { TimetableEvent, EventsList } from '@/api';
 const DAY_STRINGS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 // const API_BASE = "http://localhost:3000/api/v1/"
-const API_BASE = "https://timetable.swansea.cymru/api/v1";
+const API_BASE = "https://timetable.swansea.cymru/api/v1/";
 
 const AUTO_RELOAD_TIME = 15 * 60 * 1000; // 15 minutes
 
