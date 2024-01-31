@@ -25,6 +25,8 @@ let type = router.currentRoute.value.params.type;
 <style scoped>
 main {
     padding: 2rem;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .cat-button-fallback {
