@@ -2,7 +2,8 @@
 import router from '@/router';
 import { ref } from 'vue';
 import { getStartOfWeek, formatTime } from '@/util';
-import type { TimetableEvent, EventsList, API_BASE } from '@/api';
+import type { TimetableEvent, EventsList } from '@/api';
+import { API_BASE } from '@/api';
 
 const DAY_STRINGS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
