@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import Timetable from './components/Timetable.vue'
+import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
-  <Timetable />
+  <RouterView />
 </template>
 
 <style scoped>
+
 </style>
