@@ -1,6 +1,7 @@
 import { waitFor } from "./util";
 
-const API_BASE = 'http://localhost:3000/api/v1/';
+// export const API_BASE = "http://localhost:3000/api/v1/"
+export const API_BASE = "https://timetable.swansea.cymru/api/v1/";
 
 export async function getTimetableTypes(): Promise<TimetableType[]> {
     let res = await fetch(API_BASE + 'types');

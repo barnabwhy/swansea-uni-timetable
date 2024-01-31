@@ -2,12 +2,9 @@
 import router from '@/router';
 import { ref } from 'vue';
 import { getStartOfWeek, formatTime } from '@/util';
-import type { TimetableEvent, EventsList } from '@/api';
+import type { TimetableEvent, EventsList, API_BASE } from '@/api';
 
 const DAY_STRINGS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-
-// const API_BASE = "http://localhost:3000/api/v1/"
-const API_BASE = "https://timetable.swansea.cymru/api/v1/";
 
 const AUTO_RELOAD_TIME = 15 * 60 * 1000; // 15 minutes
 
@@ -75,7 +72,6 @@ function eventsArray(events: EventsList): TimetableEvent[] {
 }
 
 function filterToDay(events: TimetableEvent[], day: number): TimetableEvent[] {
-    console.log(events);
     return events.filter(e => (new Date(e.StartDateTime).getDay() - 1 % 7) == day);
 }
 </script>

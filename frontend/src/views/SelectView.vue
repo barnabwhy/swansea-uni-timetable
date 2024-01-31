@@ -50,7 +50,7 @@ function goToTimetable() {
             <h1>The alternative timetable for Swansea University</h1>
 
             <button class="done-button" :disabled="getAllSelected().length == 0" @click="goToTimetable">Done</button>
-            <button class="help-button" aria-label="Help"></button>
+            <!-- <button class="help-button" aria-label="Help"></button> -->
 
             <br>
             <h2>Select your timetable</h2>
@@ -75,7 +75,7 @@ function goToTimetable() {
         </main>
         <aside>
             <h1>Selected</h1>
-            
+
             <template v-for="t in types">
                 <details open>
                     <summary>{{ t.Name }}</summary>
