@@ -8,6 +8,7 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalFilters(new APIErrorFilter());
 
-  await app.listen(3000);
+  console.log(process.env)
+  await app.listen(process.env.NODE_ENV == 'dev' ? 3000 : 80);
 }
 bootstrap();

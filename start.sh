@@ -18,6 +18,7 @@ yarn
 
 dev="dev"
 if [[ "$1" == "$dev" ]]; then
+    export NODE_ENV="dev"
     yarn run start\:dev
 else
     yarn run start
