@@ -49,7 +49,6 @@ function goToTimetable() {
         <main>
             <h1>The alternative timetable for Swansea University</h1>
 
-            <button class="done-button" :disabled="getAllSelected().length == 0" @click="goToTimetable">Done</button>
             <!-- <button class="help-button" aria-label="Help"></button> -->
 
             <br>
@@ -73,7 +72,10 @@ function goToTimetable() {
                 </Suspense>
             </template>
         </main>
-        <aside>
+        <details class="sidebar-toggle">
+            <summary></summary>
+        </details>
+        <aside class="sidebar">
             <h1>Selected</h1>
 
             <template v-for="t in types">
@@ -87,6 +89,7 @@ function goToTimetable() {
                 </details>
             </template>
         </aside>
+        <button class="done-button" :disabled="getAllSelected().length == 0" @click="goToTimetable">Done</button>
     </div>
 </template>
 
@@ -108,7 +111,44 @@ main {
     padding: 2rem;
 }
 
-aside {
+.sidebar-toggle {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    display: none;
+    visibility: hidden;
+    z-index: 10;
+    rotate: 90deg;
+    border: 1px solid var(--color-border);
+    height: 2rem;
+    width: 2rem;
+    display: grid;
+    align-items: center;
+    border-radius: 50%;
+    background-color: var(--color-background);
+    cursor: pointer;
+}
+.sidebar-toggle summary {
+    display: grid;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+.sidebar-toggle summary::before {
+    margin: 0;
+}
+
+.sidebar-toggle:hover {
+    border-color: aquamarine;
+}
+
+.sidebar-toggle:active {
+    opacity: 0.8;
+}
+
+.sidebar {
     width: 24rem;
     padding: 2rem;
     border-left: 1px solid var(--color-border);
@@ -131,7 +171,7 @@ aside {
 .done-button {
     border-radius: 4px;
     vertical-align: middle;
-    padding: 0.5rem;
+    padding: 0.5rem 1rem;
     border: 0;
     float: right;
     background: var(--color-background-soft);
@@ -141,6 +181,13 @@ aside {
     transition: border-color .2s, opacity .2s;
     border: 1px solid var(--color-border);
     color: var(--color-text);
+    font-size: 1.25rem;
+
+    box-shadow: 0px 1px 4px rgba(0,0,0,0.5);
+    position: fixed;
+    bottom: 2rem;
+    right: 26rem;
+    z-index: 3;
 }
 
 .done-button:hover {
@@ -154,7 +201,7 @@ aside {
 .done-button:disabled {
     border-color: var(--color-border);
     cursor: default;
-    opacity: 0.75;
+    opacity: 0.5;
 }
 
 @media (prefers-color-scheme: light) {
@@ -237,5 +284,38 @@ summary::marker {
     border: 1px solid mediumaquamarine;
     color: var(--color-text);
     font-weight: bold;
+}
+
+@media screen and (max-width: 64rem) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+
+    .done-button {
+        right: 2rem;
+    }
+    .sidebar-toggle {
+        display: block;
+        visibility: visible;
+    }
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: -24rem;
+        background-color: var(--color-background);
+        transition: right 0.1s;
+        padding-bottom: 5.25rem;
+    }
+    .sidebar-toggle[open] ~ .sidebar {
+        right: 0;
+    }
+}
+
+@media screen and (max-width: 36rem) {
+    .sidebar {
+        width: 100%;
+        border: none;
+        right: -100%;
+    }
 }
 </style>
