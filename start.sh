@@ -1,7 +1,7 @@
 #!/bin/bash
 
 nobuild="nobuild"
-if [[ "$1" != "$nobuild" ]]; then
+if [ "$1" != "$nobuild" ]; then
     # Build frontend
     cd frontend
     yarn
@@ -22,7 +22,7 @@ cd backend
 yarn
 
 dev="dev"
-if [[ "$1" == "$dev" ]]; then
+if [ "$1" = "$dev" ]; then
     export NODE_ENV="dev"
     yarn run start\:dev
 else
