@@ -32,25 +32,25 @@ export class ApiV1Controller {
   }
 
   @Get(':type/:cat')
-  @Header('Cache-Control', 'public, max-age=300')
+  @Header('Cache-Control', 'public, max-age=300, stale-if-error=21600')
   getAllEvents(@Param('type') type, @Param('cat') cat) {
     return this.apiService.getAllEvents(type, cat);
   }
 
   @Get(':type/:cat/:weekOffset')
-  @Header('Cache-Control', 'public, max-age=300')
+  @Header('Cache-Control', 'public, max-age=300, stale-if-error=21600')
   getWeekOffsetEvents(@Param('type') type, @Param('cat') cat, @Param('weekOffset') weekOffset) {
     return this.apiService.getWeekOffsetEvents(type, cat, weekOffset);
   }
 
   @Get(':type/:cat/week/:week')
-  @Header('Cache-Control', 'public, max-age=300')
+  @Header('Cache-Control', 'public, max-age=300, stale-if-error=21600')
   getWeekNumberEvents(@Param('type') type, @Param('cat') cat, @Param('week') week) {
     return this.apiService.getWeekNumberEvents(type, cat, week);
   }
 
   @Get(':type/:cat/start/:weekStart')
-  @Header('Cache-Control', 'public, max-age=300')
+  @Header('Cache-Control', 'public, max-age=300, stale-if-error=21600')
   getWeekStartEvents(@Param('type') type, @Param('cat') cat, @Param('weekStart') weekStart) {
     return this.apiService.getWeekStartEvents(type, cat, parseInt(weekStart));
   }
