@@ -1,7 +1,7 @@
 import { StreamedList, waitFor } from "./util";
 
-// export const API_BASE = "http://localhost:3000/api/v1/"
-export const API_BASE = "https://timetable.swansea.cymru/api/v1/";
+export const API_BASE = "https://timetable.swansea.cymru/";
+// export const API_BASE = "http://192.168.0.110:3000/"
 
 export const API_V1 = "api/v1/";
 export const API_V2 = "api/v2/";
