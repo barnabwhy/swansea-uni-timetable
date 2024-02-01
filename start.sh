@@ -1,16 +1,21 @@
 #!/bin/bash
 
-# Build frontend
-cd frontend
-yarn
-yarn run build
+nobuild="nobuild"
+if [[ "$1" != "$nobuild" ]]; then
+    # Build frontend
+    cd frontend
+    yarn
+    yarn run build
 
-cd ..
+    cd ..
+fi
 
 # Set env vars
-set -a
-. ./.env
-set +a
+if test -f ./.env; then
+    set -a
+    . ./.env
+    set +a
+fi
 
 # Serve backend & frontend
 cd backend
