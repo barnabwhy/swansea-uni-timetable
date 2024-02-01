@@ -1,39 +1,38 @@
-import { waitFor } from "./util";
+import { StreamedList, waitFor } from "./util";
 
 // export const API_BASE = "http://localhost:3000/api/v1/"
 export const API_BASE = "https://timetable.swansea.cymru/api/v1/";
 
+export const API_V1 = "api/v1/";
+export const API_V2 = "api/v2/";
+
 export async function getTimetableTypes(): Promise<TimetableType[]> {
-    let res = await fetch(API_BASE + 'types');
+    let res = await fetch(API_BASE + API_V1 + 'types');
     return await res.json();
 }
 
 const CAT_CACHE_EXPIRY = 5 * 60 * 1000;
-let catCache: { [key: string]: any } = {};
+let catCache: { [key: string]: StreamedList } = {};
 
-export async function getTimetableCats(type: string, page: number): Promise<PaginatedResults<TimetableCategory>> {
-    if (catCache[type] && catCache[type][page] && catCache[type][page].data && Date.now() - catCache[type][page].lastUpdated < CAT_CACHE_EXPIRY) {
-        if (page % 5 == 0) {
-            return await waitFor(1, catCache[type][page].data);
-        } else {
-            return catCache[type][page].data;
-        }
+export async function getTimetableCats(type: string): Promise<StreamedList<TimetableCategory>> {
+    if (catCache[type] && catCache[type].data && Date.now() - catCache[type].lastUpdated < CAT_CACHE_EXPIRY) {
+        catCache[type].data.dispatchEvent(new Event('done'));
+        return catCache[type].data;
     }
 
-    let res = await fetch(API_BASE + `cats/${type}/${page}`);
-    let data = await res.json();
+    let streamList = new StreamedList<TimetableCategory>();
+    let res = await fetch(API_BASE + API_V2 + `cats/${type}`);
 
-    if (!catCache[type])
-        catCache[type] = {}
-
-    catCache[type][page] = {
+    if (res.body)
+        streamList.read(res.body.getReader());
+        
+    catCache[type] = {
         lastUpdated: Date.now(),
-        data,
+        data: streamList,
     };
 
-    return data;
+    return streamList;
 }
-
 
 
 export interface TimetableFilter {

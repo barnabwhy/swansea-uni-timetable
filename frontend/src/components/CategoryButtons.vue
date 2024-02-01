@@ -1,43 +1,56 @@
 <script setup lang="ts">
 import { getTimetableCats, type TimetableCategory } from '../api';
-import { ref, type Ref } from 'vue';
+import { computed, ref, type Ref } from 'vue';
+import { useElementBounding } from '@vueuse/core';
 
 const { type, active } = defineProps<{ type: string, active?: TimetableCategory[] }>();
 
 const emit = defineEmits(['select']);
 
 let cats: Ref<TimetableCategory[]> = ref([]);
-initFetchCats()
 
 let searchText = ref("");
 
 let isFetching = ref(true);
 
 async function initFetchCats() {
-    let res = await getTimetableCats(type, 1);
-    cats.value.push(...res.Results);
-    fetchRemainingCats(2, res.TotalPages);
+    let catsStream = await getTimetableCats(type);
+
+    cats.value = catsStream.list;
+
+    catsStream.addEventListener('update', () => {
+        cats.value = [...catsStream.list];
+    });
+    catsStream.addEventListener('done', () => {
+        cats.value = [...catsStream.list];
+    });
 }
 
-async function fetchRemainingCats(i: number, totalPages: number) {
-    if (i > totalPages) {
-        isFetching.value = false;
-        return;
-    }
+const container: Ref<HTMLDivElement | null> = ref(null);
 
-    let res = await getTimetableCats(type, i);
-    cats.value.push(...res.Results);
-    fetchRemainingCats(i+1, res.TotalPages);
-}
+const { top } = useElementBounding(container);
+
+const visibleCats = computed(() => {
+    let offsetTop = container.value?.offsetTop ?? 0;
+    let visibleHeight = Math.max(0, window.innerHeight - offsetTop - top.value);
+
+    let horizontal = Math.floor((container.value?.offsetWidth ?? window.innerWidth) / (256 + 8));
+    let vertical = Math.ceil(visibleHeight / (128 + 8));
+    return horizontal * (vertical + 16);
+});
+
+initFetchCats()
 </script>
 
 <template>
     <input type="text" placeholder="Search" v-model="searchText">
-    <div class="category-buttons">
-        <button v-for="c of cats.filter(c => c.Name.toLowerCase().includes(searchText.toLowerCase()))" class="timetable-category-button" :class="{ active: active?.includes(c) }"
-            @click="emit('select', c)">{{ c.Name }}</button>
+    <div class="category-buttons" ref="container">
+        <button v-for="c of cats.filter(c => c.Name.toLowerCase().includes(searchText.toLowerCase())).slice(0, visibleCats)" :key="c.Identity"
+            class="timetable-category-button" :class="{ active: active?.includes(c) }" @click="emit('select', c)">{{ c.Name
+            }}</button>
 
-        <button v-if="cats.filter(c => c.Name.toLowerCase().includes(searchText.toLowerCase())).length == 0" disabled class="timetable-category-button">
+        <button v-if="cats.filter(c => c.Name.toLowerCase().includes(searchText.toLowerCase())).length == 0" disabled
+            class="timetable-category-button">
             {{ isFetching ? 'Loading...' : 'No results' }}
         </button>
     </div>
@@ -101,6 +114,6 @@ input {
 }
 
 .timetable-category-button.active {
-  border-color: mediumaquamarine;
+    border-color: mediumaquamarine;
 }
 </style>
