@@ -2,6 +2,7 @@ import { log } from "./log";
 import { readFile } from "fs/promises";
 import { chunk, formatApiRoute, getStartOfWeek } from "./util";
 import { ErrorType, APIError } from "./errors";
+import { PassThrough } from "stream";
 
 const API_BASE = "https://scientia-eu-v4-api-d1-04.azurewebsites.net/api/Public/";
 const CATEGORY_PATH = "CategoryTypes/Categories/Events/Filter/c0fafdf7-2aab-419e-a69b-bbb9e957303c";
@@ -376,6 +377,46 @@ export async function getCatsList(type: string, page: number): Promise<Paginated
     metaCache.cats[type][page].lastUpdated = Date.now();
 
     return data;
+}
+
+export async function streamCatsList(type: string, stream: PassThrough) {
+    let page = 1;
+    let totalPages = 1;
+    let totalResults = 0;
+
+    stream.setDefaultEncoding('utf-8');
+
+    stream.write('[');
+
+    while (page <= totalPages) {
+        let res = await getCatsList(type, page);
+
+        if (!metaCache.cats[type]) metaCache.cats[type] = {};
+        if (!metaCache.cats[type][page]) metaCache.cats[type][page] = {};
+
+        metaCache.cats[type][page].data = res;
+        metaCache.cats[type][page].lastUpdated = Date.now();
+
+        totalPages = res.TotalPages;
+        page++;
+
+        if (stream.closed)
+            return;
+
+        for (const [i, cat] of res.Results.entries()) {
+            totalResults ++;
+
+            stream.cork();
+            stream.write(JSON.stringify(cat));
+
+            if (totalResults < res.Count)
+                stream.write(',');
+
+            stream.uncork();
+        }
+    }
+
+    stream.end(']');
 }
 
 async function precacheAllTypesCats() {

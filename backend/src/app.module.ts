@@ -5,7 +5,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { ApiMigrationModule } from './api/migrate-v1/migrate-v1.module';
 import { ApiV1Module } from './api/v1/api-v1.module';
-import { CacheModule } from '@nestjs/cache-manager';
+import { ApiV2Module } from './api/v2/api-v2.module';
 
 @Module({
   imports: [
@@ -15,6 +15,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     }),
 
     ApiV1Module,
+    ApiV2Module,
 
     // Must be last
     ApiMigrationModule,

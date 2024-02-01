@@ -1,7 +1,7 @@
 import { Controller, Get, Header, Param, UseInterceptors } from '@nestjs/common';
 import { ApiV1Service } from './api-v1.service';
 import '../../common/api-proxy';
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller('api/v1')
 @UseInterceptors(CacheInterceptor)
