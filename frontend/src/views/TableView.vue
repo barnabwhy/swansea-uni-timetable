@@ -83,8 +83,16 @@ function eventsArray(events: EventsList): TimetableEvent[] {
     return eventArr;
 }
 
+function uniqueEvents(events: TimetableEvent[]): TimetableEvent[] {
+    return [
+        ...new Map(
+            events.map(x => [x.Identity, x])
+        ).values()
+    ]
+}
+
 function filterToDay(events: TimetableEvent[], day: number): TimetableEvent[] {
-    return events.filter(e => (new Date(e.StartDateTime).getDay() - 1 % 7) == day)
+    return uniqueEvents(events).filter(e => (new Date(e.StartDateTime).getDay() - 1 % 7) == day)
         .sort((a, b) => new Date(a.StartDateTime).getTime() - new Date(b.StartDateTime).getTime());
 }
 </script>
