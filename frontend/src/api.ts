@@ -12,7 +12,7 @@ export async function getTimetableTypes(): Promise<TimetableType[]> {
 }
 
 const CAT_CACHE_EXPIRY = 5 * 60 * 1000;
-let catCache: { [key: string]: StreamedList<TimetableCategory> } = {};
+let catCache: { [key: string]: { lastUpdated: number, data: StreamedList<TimetableCategory> } } = {};
 
 export async function getTimetableCats(type: string): Promise<StreamedList<TimetableCategory>> {
     if (catCache[type] && catCache[type].data && Date.now() - catCache[type].lastUpdated < CAT_CACHE_EXPIRY) {
