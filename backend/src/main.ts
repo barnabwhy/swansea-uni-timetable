@@ -1,9 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { APIErrorFilter } from './api-error.filter';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import compression from '@fastify/compress';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+  );
+
+  await app.register(compression, {
+    encodings: ['gzip', 'deflate'],
+  });
 
   app.enableCors();
   app.useGlobalFilters(new APIErrorFilter());

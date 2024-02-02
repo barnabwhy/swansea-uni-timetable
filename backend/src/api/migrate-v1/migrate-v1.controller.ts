@@ -25,19 +25,19 @@ export class ApiMigrationController {
   }
 
   // :type/:cat/week/:week
-  @Get(':type((\\w+-)+\\w+)/:cat/week/:week(\\d+)')
+  @Get(':type((\\w+?-)+?\\w+?)/:cat/week/:week(\\d+)')
   getWeek(@Req() req, @Res() res) {
     res.redirect('/api/v1' + req.originalUrl);
   }
 
   // :type/:cat/:weekOffset
-  @Get(':type((\\w+-)+\\w+)/:cat/:weekOffset(\\d+)')
+  @Get(':type((\\w+?-)+?\\w+?)/:cat/:weekOffset(\\d+)')
   getWeekOffset(@Req() req, @Res() res) {
     res.redirect('/api/v1' + req.originalUrl);
   }
 
   // :type/:cat
-  @Get(':type((\\w+-)+\\w+)/:cat')
+  @Get(':type((\\w+?-)+?\\w+?)/:cat')
   getCat(@Req() req, @Res() res) {
     res.redirect('/api/v1' + req.originalUrl);
   }

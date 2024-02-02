@@ -1,4 +1,12 @@
-import { Controller, Get, Header, Param, Res, StreamableFile, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Header,
+  Param,
+  Res,
+  StreamableFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { ApiV2Service } from './api-v2.service';
 import '../../common/api-proxy';
@@ -26,11 +34,13 @@ export class ApiV2Controller {
     return this.apiService.getTypesEx();
   }
 
-
   @Get('cats/:type')
   @Header('Cache-Control', 'public, max-age=3600')
   @Header('Content-Type', 'application/json')
-  getCats(@Res({ passthrough: true }) res: Response, @Param('type') type)  {
+  getCats(
+    @Res({ passthrough: true }) res: Response,
+    @Param('type') type,
+  ): StreamableFile {
     return this.apiService.getCats(res, type);
   }
 }
