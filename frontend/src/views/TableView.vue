@@ -10,7 +10,7 @@ const DAY_STRINGS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sa
 const AUTO_RELOAD_TIME = 15 * 60 * 1000; // 15 minutes
 
 let type = router.currentRoute.value.params.type;
-let cat = router.currentRoute.value.params.cat;
+let cat = router.currentRoute.value.params.cat.toString().replace(/,/g, '_');
 
 let events = ref(null);
 
