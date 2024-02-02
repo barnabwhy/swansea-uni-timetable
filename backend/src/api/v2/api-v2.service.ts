@@ -1,6 +1,13 @@
 import { Injectable, StreamableFile } from '@nestjs/common';
-import { Response } from 'express';
-import { getTypesList, getTypesExList, streamCatsList, getAllCatEvents, getWeekOffsetCatEvents, getWeekNumberCatEvents, getWeekStartCatEvents } from 'src/common/api-proxy';
+import {
+  getTypesList,
+  getTypesExList,
+  streamCatsList,
+  getAllCatEvents,
+  getWeekOffsetCatEvents,
+  getWeekNumberCatEvents,
+  getWeekStartCatEvents,
+} from 'src/common/api-proxy';
 import { PassThrough } from 'stream';
 
 @Injectable()
@@ -17,8 +24,8 @@ export class ApiV2Service {
     return getTypesExList();
   }
 
-  getCats(res: Response, type: string)  {
-    let stream = new PassThrough();
+  getCats(type: string) {
+    const stream = new PassThrough();
 
     streamCatsList(type, stream);
     return new StreamableFile(stream);

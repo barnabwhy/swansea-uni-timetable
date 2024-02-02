@@ -11,7 +11,7 @@ import { ApiV2Module } from './api/v2/api-v2.module';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', '..', 'frontend', 'dist'),
-      exclude: ['api'],
+      exclude: ['api', '/api'],
     }),
 
     ApiV1Module,

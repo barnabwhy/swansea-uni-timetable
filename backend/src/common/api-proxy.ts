@@ -337,7 +337,7 @@ async function getCatEventsWithBody(
   cat: string,
   body: { [key: string]: any },
 ): Promise<EventsList> {
-  const cats = cat.split(',').map((c) => c.trim());
+  const cats = cat.split(/[_,]/).map((c) => c.trim());
   const result = {
     CategoryEvents: null,
     BookingRequests: null,
