@@ -43,4 +43,14 @@ export class ApiV2Controller {
   ): StreamableFile {
     return this.apiService.getCats(res, type);
   }
+
+  @Get(':type/:cat/start/:weekStart')
+  @Header('Cache-Control', 'public, max-age=300, stale-if-error=86400')
+  getWeekStartEvents(
+    @Param('type') type,
+    @Param('cat') cat,
+    @Param('weekStart') weekStart,
+  ) {
+    return this.apiService.getWeekStartEvents(type, cat, parseInt(weekStart));
+  }
 }

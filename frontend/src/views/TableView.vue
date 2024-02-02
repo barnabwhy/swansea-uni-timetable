@@ -3,7 +3,7 @@ import router from '@/router';
 import { ref } from 'vue';
 import { getStartOfWeek, formatTime } from '@/util';
 import type { TimetableEvent, EventsList } from '@/api';
-import { API_BASE, API_V1 } from '@/api';
+import { API_BASE, API_V2 } from '@/api';
 
 const DAY_STRINGS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -35,7 +35,7 @@ async function fetchWeekEvents() {
     fetching.value = true;
 
     try {
-        let res = await fetch(API_BASE + API_V1 + `${type}/${cat}/start/${getStartOfWeek(weekOffset.value).getTime()}`);
+        let res = await fetch(API_BASE + API_V2 + `${type}/${cat}/start/${getStartOfWeek(weekOffset.value).getTime()}`);
 
         if (res && res.ok) {
             let data = await res.json();

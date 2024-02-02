@@ -20,8 +20,8 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalFilters(new APIErrorFilter());
 
-  let port = process.env.NODE_ENV == 'dev' ? 3000 : 80;
-  console.log(`Listening on 0.0.0.0:${port}`)
+  const port = process.env.NODE_ENV == 'dev' ? 3000 : 80;
+  console.log(`Listening on 0.0.0.0:${port}`);
   await app.listen(port, '0.0.0.0');
 }
 bootstrap();

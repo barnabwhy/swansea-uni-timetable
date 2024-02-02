@@ -1,4 +1,10 @@
-import { Controller, Get, Header, Param, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Header,
+  Param,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiV1Service } from './api-v1.service';
 import '../../common/api-proxy';
 import { CacheInterceptor } from '@nestjs/cache-manager';
@@ -39,19 +45,21 @@ export class ApiV1Controller {
 
   @Get(':type/:cat/:weekOffset')
   @Header('Cache-Control', 'public, max-age=300, stale-if-error=86400')
-  getWeekOffsetEvents(@Param('type') type, @Param('cat') cat, @Param('weekOffset') weekOffset) {
+  getWeekOffsetEvents(
+    @Param('type') type,
+    @Param('cat') cat,
+    @Param('weekOffset') weekOffset,
+  ) {
     return this.apiService.getWeekOffsetEvents(type, cat, weekOffset);
   }
 
   @Get(':type/:cat/week/:week')
   @Header('Cache-Control', 'public, max-age=300, stale-if-error=86400')
-  getWeekNumberEvents(@Param('type') type, @Param('cat') cat, @Param('week') week) {
+  getWeekNumberEvents(
+    @Param('type') type,
+    @Param('cat') cat,
+    @Param('week') week,
+  ) {
     return this.apiService.getWeekNumberEvents(type, cat, week);
-  }
-
-  @Get(':type/:cat/start/:weekStart')
-  @Header('Cache-Control', 'public, max-age=300, stale-if-error=86400')
-  getWeekStartEvents(@Param('type') type, @Param('cat') cat, @Param('weekStart') weekStart) {
-    return this.apiService.getWeekStartEvents(type, cat, parseInt(weekStart));
   }
 }
