@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TimetableCategory } from '@/api';
 import CategoryButtons from '@/components/CategoryButtons.vue';
 import router from '@/router';
 
@@ -13,7 +14,7 @@ let type = router.currentRoute.value.params.type;
         <h2>Select your timetable</h2>
 
         <Suspense>
-            <CategoryButtons :type="type.toString()" @select="(catType, catId) => router.push(`/table/${catType}/${catId}`)" />
+            <CategoryButtons :type="type.toString()" @select="(c: TimetableCategory) => router.push(`/table/${c.CategoryTypeIdentity}/${c.Identity}`)" />
 
             <template #fallback>
                 <span class="cat-button-fallback">Loading...</span>
