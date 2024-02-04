@@ -246,7 +246,10 @@ h1 {
 
 .day {
     max-height: 100%;
-    flex: 1;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    min-width: 256px;
 }
 
 .event {
@@ -295,7 +298,7 @@ h1 {
     color: var(--color-text);
     display: grid;
     grid-template-columns: 1fr auto;
-    -webkit-line-clamp: 1;
+    text-overflow: ellipsis;
     overflow: hidden;
 }
 
@@ -307,9 +310,8 @@ h1 {
     font-size: 12px;
     color: var(--color-text);
     line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     overflow: hidden;
 }
 
@@ -350,7 +352,7 @@ h1 {
 }
 
 @media screen and (max-width: 480px) {
-    .event {
+    .event, .day {
         min-width: unset;
         width: calc(100vw - 4rem);
     }
