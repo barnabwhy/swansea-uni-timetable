@@ -57,8 +57,9 @@
   margin: 0;
 }
 
+
 body {
-  min-height: 100vh;
+  min-height: 100%;
   color: var(--color-text);
   background: var(--color-background);
   line-height: 1.6;
