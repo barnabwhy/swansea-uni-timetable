@@ -47,7 +47,7 @@ async function fetchWeekEvents() {
         } else {
             failed.value = true;
         }
-    } catch(e) {
+    } catch (e) {
         failed.value = true;
     }
 
@@ -100,25 +100,39 @@ function filterToDay(events: TimetableEvent[], day: number): TimetableEvent[] {
 <template>
     <main>
         <h1>Week of {{ getStartOfWeek(weekOffset).toLocaleDateString() }}</h1>
-        <!-- <span class="material-icons settings" @click="showSettings = true">settings</span> -->
-        <span class="material-icons prevWeek" @click="prevWeek()">chevron_left</span>
-        <span class="material-icons nextWeek" @click="nextWeek()">chevron_right</span>
+        <!-- <span class="material-symbols-outlined settings" @click="showSettings = true">settings</span> -->
+        <span class="material-symbols-outlined prevWeek" @click="prevWeek()">chevron_left</span>
+        <span class="material-symbols-outlined nextWeek" @click="nextWeek()">chevron_right</span>
         <div class="timetable" v-if="!fetching && events != null && !failed">
             <template v-for="(_, day) in 7">
                 <div class="day" v-if="filterToDay(eventsArray(events), day).length > 0 || day < 5">
                     <b>{{ DAY_STRINGS[day] }}</b>
                     <template v-for="ev in filterToDay(eventsArray(events), day)">
                         <div class="event">
+                            <div class="topRow">
+                                <p class="time">
+                                    <span class="material-symbols-outlined">schedule</span>
+                                    {{ formatTime(ev.StartDateTime) }}-{{ formatTime(ev.EndDateTime) }}
+                                </p>
+                                <p class="evType">{{ ev.EventType }}</p>
+                            </div>
                             <p class="name">{{ ev.Name }}</p>
-                            <p class="evType"><span class="material-icons">event</span>{{ ev.EventType }}</p>
-                            <p class="time"><span class="material-icons">schedule</span>{{ formatTime(ev.StartDateTime)
-                            }}-{{
-    formatTime(ev.EndDateTime) }}</p>
-                            <p class="location"><span class="material-icons">location_on</span>{{ ev.Location }}</p>
+                            <p class="location detail"><span class="material-symbols-outlined">location_on</span>{{
+                                ev.Location }}</p>
+                            <p class="teachingWeeks detail"
+                                v-if="ev.ExtraProperties.find(p => p.Name == 'Activity.TeachingWeekPattern_PatternAsArray')">
+                                <span class="material-symbols-outlined">event</span>
+                                Weeks {{ ev.ExtraProperties.find(p => p.Name ==
+                                    'Activity.TeachingWeekPattern_PatternAsArray')?.Value }}
+                            </p>
+                            <p class="module detail" v-if="ev.ExtraProperties.find(p => p.Name == 'Module Description')">
+                                <span class="material-symbols-outlined">school</span>
+                                {{ ev.ExtraProperties.find(p => p.Name == 'Module Description')?.Value }}
+                            </p>
                         </div>
                     </template>
                     <template v-if="filterToDay(eventsArray(events), day).length == 0">
-                        <div class="event">
+                        <div class="event empty">
                             <p class="bigText">Nothing on today</p>
                         </div>
                     </template>
@@ -129,14 +143,14 @@ function filterToDay(events: TimetableEvent[], day: number): TimetableEvent[] {
         <span class="failure" v-if="!fetching && failed"><b>Failed to load timetable data.</b><br>Are you offline?</span>
 
         <!-- <div class="details" :class="{ show: showDetails || showSettings }">
-            <span class="material-icons close" @click="showDetails = false; showSettings = false">close</span>
+            <span class="material-symbols-outlined close" @click="showDetails = false; showSettings = false">close</span>
             <template v-if="detailsEvent != '' && !showSettings && detailsEv">
                 <p class="name">{{ detailsEv.Name }}</p>
-                <p class="evType item"><span class="material-icons">event</span>{{ detailsEv.EventType }}</p>
-                <p class="time item"><span class="material-icons">schedule</span>{{ dayString(new
+                <p class="evType item"><span class="material-symbols-outlined">event</span>{{ detailsEv.EventType }}</p>
+                <p class="time item"><span class="material-symbols-outlined">schedule</span>{{ dayString(new
                     Date(detailsEv.StartDateTime).getDay()) }} {{ formatTime(detailsEv.StartDateTime) }}-{{
         formatTime(detailsEv.EndDateTime) }}</p>
-                <p class="location item"><span class="material-icons">location_on</span><span
+                <p class="location item"><span class="material-symbols-outlined">location_on</span><span
                         v-for="loc of detailsEv.Location.split(/(?<=,)/g)">{{ loc }}</span></p>
             </template>
             <template v-if="showSettings">
@@ -145,7 +159,7 @@ function filterToDay(events: TimetableEvent[], day: number): TimetableEvent[] {
                     <input ref="excludeInput" @keydown.enter="addExclude()" placeholder="Enter a term...">
                     <br>
                     <span class="excluded" v-for="ex of exclude" @click="removeExclude(ex)">{{ ex }} <span
-                            class="material-icons">close</span></span>
+                            class="material-symbols-outlined">close</span></span>
                 </p>
             </template>
         </div> -->
@@ -213,11 +227,12 @@ h1 {
     line-height: 1.25;
 }
 
-.event .material-icons, .details .material-icons {
-  font-size: inherit;
-  margin: 0px 4px 0px 0px;
-  vertical-align: text-top;
-  user-select: none;
+.event .material-symbols-outlined,
+.details .material-symbols-outlined {
+    font-size: inherit;
+    margin: 0px 4px 0px 0px;
+    vertical-align: text-top;
+    user-select: none;
 }
 
 .timetable {
@@ -270,31 +285,25 @@ h1 {
 }
 
 .event .name {
-    margin-bottom: 2px;
-    margin-right: 80px;
+    margin: 0;
+    font-weight: bold;
+    color: var(--color-heading);
 }
 
-.event .time {
-    font-size: 11px;
-    color: var(--color-text);
-    position: absolute;
-    right: 8px;
-    top: 8px;
-    line-height: 1;
-}
-
-.event .evType {
+.event .topRow {
     font-size: 12px;
     color: var(--color-text);
-    line-height: 1.5;
-    display: -webkit-box;
+    display: grid;
+    grid-template-columns: 1fr auto;
     -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
-.event .evType,
-.event .location {
+.event .time {
+    font-weight: bold;
+}
+
+.event .detail {
     font-size: 12px;
     color: var(--color-text);
     line-height: 1.5;
@@ -302,6 +311,11 @@ h1 {
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+.empty {
+    background: none;
+    border-color: var(--color-background-soft);
 }
 
 .prevWeek,
@@ -333,5 +347,12 @@ h1 {
 .nextWeek:active {
     background-color: rgba(0, 0, 0, 0.15);
     color: var(--color-heading);
+}
+
+@media screen and (max-width: 480px) {
+    .event {
+        min-width: unset;
+        width: calc(100vw - 4rem);
+    }
 }
 </style>
