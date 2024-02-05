@@ -296,6 +296,8 @@ h1 {
 .event .topRow {
     font-size: 12px;
     color: var(--color-text);
+    line-height: 1;
+    margin-bottom: 2px;
     display: grid;
     grid-template-columns: 1fr auto;
     text-overflow: ellipsis;
@@ -310,7 +312,12 @@ h1 {
     font-size: 12px;
     color: var(--color-text);
     line-height: 1.5;
-    white-space: nowrap;
+    display: box;
+    display: -moz-box;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     text-overflow: ellipsis;
     overflow: hidden;
 }
