@@ -49,6 +49,8 @@ export class StreamedList<T> extends EventTarget  {
         this.str = str;
 
         let depth = 0;
+        let backslashes = 0;
+        let inString = false;
         for (let i = this.start; i < str.length; i++) {
             if (i == 0) {
                 if (str[i] != '[')
@@ -57,35 +59,39 @@ export class StreamedList<T> extends EventTarget  {
                 continue;
             }
 
-            if (str[i] == '{') {
-                if (depth == 0)
-                    this.start = i;
-
-                depth++;
+            if (str[i] == '\\') {
+                backslashes++;
                 continue;
             }
 
-            if (str[i] == '}') {
-                if (depth > 0)
-                    depth--;
+            if (backslashes % 2 == 0) {
+                if (str[i] == '"') {
+                    inString = !inString;
+                } else if (inString) {
+                    // Do nothing
+                } else if (str[i] == '{') {
+                    if (depth == 0)
+                        this.start = i;
 
-                if (depth == 0) {
-                    let objStr = str.slice(this.start, i+1);
-                    this.list.push(JSON.parse(objStr));
-                    this.dispatchEvent(new Event('update'));
+                    depth++;
+                } else if (str[i] == '}') {
+                    if (depth > 0)
+                        depth--;
+
+                    if (depth == 0) {
+                        let objStr = str.slice(this.start, i+1);
+                        this.list.push(JSON.parse(objStr));
+                        this.dispatchEvent(new Event('update'));
+                    }
+                } else if (str[i] == ',' && depth == 0) {
+                    // Do nothing
+                } else if (str[i] == ']' && depth == 0) {
+                    this.dispatchEvent(new Event('done'));
+                    return;
                 }
-
-                continue;
             }
 
-            if (str[i] == ',' && depth == 0) {
-                continue;
-            }
-
-            if (str[i] == ']' && depth == 0) {
-                this.dispatchEvent(new Event('done'));
-                return;
-            }
+            backslashes = 0;
         }
 
         this.reader?.read().then(r => this.processData(r));
