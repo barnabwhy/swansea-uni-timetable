@@ -478,7 +478,11 @@ export async function streamCatsList(type: string, stream: PassThrough) {
       totalResults++;
 
       stream.cork();
-      stream.write(JSON.stringify(cat));
+
+      const chunk = JSON.stringify(cat);
+      if (chunk) {
+        stream.write(chunk);
+      }
 
       if (totalResults < res.Count) stream.write(',');
 
