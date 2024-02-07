@@ -10,7 +10,7 @@ import { ApiV2Module } from './api/v2/api-v2.module';
 @Module({
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'frontend', 'dist'),
+      rootPath: join(process.cwd(), '..', 'frontend', 'dist'),
       exclude: ['api', '/api'],
     }),
 
