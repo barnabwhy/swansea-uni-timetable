@@ -19,7 +19,9 @@ async function bootstrap() {
     encodings: ['gzip', 'deflate'],
   });
 
-  app.enableCors();
+  app.enableCors({
+    exposedHeaders: ['Date'],
+  });
   app.useGlobalFilters(new APIErrorFilter());
 
   const port = process.env.NODE_ENV == 'dev' ? 3000 : 80;
