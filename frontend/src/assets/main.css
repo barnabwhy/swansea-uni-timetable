@@ -1,4 +1,5 @@
 @import './base.css';
+@import './material-symbols-outlined.css';
 
 #app {
   font-weight: normal;

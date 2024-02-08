@@ -38,6 +38,9 @@ async function fetchWeekEvents() {
     hasData.value = false;
     fetching.value = true;
 
+    let usedCache = false;
+    let dateStr = '<unknown date>';
+
     try {
         const url = API_BASE + API_V2 + `${type}/${cat}/start/${getStartOfWeek(weekOffset.value).getTime()}`;
         let cached = await cache.match(url);
@@ -45,9 +48,11 @@ async function fetchWeekEvents() {
             let data = await cached.json();
             events.value = data;
             hasData.value = true;
+            usedCache = true
 
             let date = cached.headers.get('date');
-            let dateStr = date ? new Date(date).toLocaleString() : '<unknown date>';
+            if (date)
+                dateStr = new Date(date).toLocaleString();
 
             warningContent.value = `Failed fetching events for timetable.<br>Using cached data from <b>${dateStr}</b>`;
         }
@@ -69,7 +74,12 @@ async function fetchWeekEvents() {
         }
     } catch (e: any) {
         console.log(e);
-        warningContent.value = `Failed fetching events for timetable.<br><br><b>Error encountered:</b><pre><code>${escape(e.toString())}</code></pre>`;
+        warningContent.value = `Failed fetching events for timetable.`;
+        
+        if (usedCache)
+            warningContent.value += `Failed fetching events for timetable.<br>Using cached data from <b>${dateStr}</b>`;
+        
+        warningContent.value += `<br><br><b>Error encountered:</b><p class="error"><code>${escape(e.toString()).replace(/\n/g, '<br>')}</code></p>`;
 
         failed.value = true;
     }
@@ -323,6 +333,13 @@ main {
     top: 2rem;
     right: 2rem;
     cursor: pointer;
+}
+
+.warning-details:deep(.error) {
+    background-color: var(--color-background-soft);
+    padding: 1rem;
+    border-radius: 8px;
+    color: #f27979;
 }
 
 @keyframes rotation {
