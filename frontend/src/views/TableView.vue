@@ -9,6 +9,8 @@ const DAY_STRINGS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sa
 
 const AUTO_RELOAD_TIME = 15 * 60 * 1000; // 15 minutes
 
+const dayRefs = ref<HTMLDivElement[]>([]);
+
 let type = router.currentRoute.value.params.type;
 let cat = router.currentRoute.value.params.cat.toString().replace(/,/g, '_');
 
@@ -24,7 +26,7 @@ let failed = ref(false);
 
 let cache: Cache;
 
-async function fetchWeekEvents() {
+async function fetchWeekEvents(isInitialLoad: boolean) {
     if (!type || !cat)
         return;
 
@@ -61,7 +63,7 @@ async function fetchWeekEvents() {
 
         if (res && res.ok) {
             cache.put(url, res.clone());
-            
+
             let data = await res.json();
 
             if (weekOffset.value == usedWeekOffset) {
@@ -69,16 +71,31 @@ async function fetchWeekEvents() {
                 lastFetch.value = Date.now();
                 hasData.value = true;
             }
+
+            if (weekOffset.value == 0 && isInitialLoad) {
+                // Scroll Horizontally to current day
+                const currentDay = (new Date()).getDay() - 1;
+                for (const dayRef of dayRefs.value) {
+                    if (parseInt(dayRef.getAttribute("day") ?? "0") == currentDay ){
+                        dayRef.scrollIntoView({
+                            behavior: 'auto',
+                            block: 'center',
+                            inline: 'center'
+                        })
+                        break;
+                    }
+                }
+            }
         } else {
             failed.value = true;
         }
     } catch (e: any) {
         console.log(e);
         warningContent.value = `Failed fetching events for timetable.`;
-        
+
         if (usedCache)
             warningContent.value += `Failed fetching events for timetable.<br>Using cached data from <b>${dateStr}</b>`;
-        
+
         warningContent.value += `<br><br><b>Error encountered:</b><p class="error"><code>${escape(e.toString()).replace(/\n/g, '<br>')}</code></p>`;
 
         failed.value = true;
@@ -92,30 +109,30 @@ function escape(htmlStr: string): string {
          .replace(/</g, "&lt;")
          .replace(/>/g, "&gt;")
          .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#39;");        
+         .replace(/'/g, "&#39;");
 
 }
 
 (async () => {
     cache = await caches.open("timetable");
-    fetchWeekEvents();
+    fetchWeekEvents(true);
 })();
 
 setInterval(() => {
     if (lastFetch.value < Date.now() - AUTO_RELOAD_TIME)
-        fetchWeekEvents();
+        fetchWeekEvents(false);
 }, 30 * 1000); // check every 30 seconds
 
 function prevWeek() {
     weekOffset.value--;
     weekOffsetChangedAt.value = Date.now();
-    fetchWeekEvents();
+    fetchWeekEvents(false);
 }
 
 function nextWeek() {
     weekOffset.value++;
     weekOffsetChangedAt.value = Date.now();
-    fetchWeekEvents();
+    fetchWeekEvents(false);
 }
 
 function eventsArray(events: EventsList): TimetableEvent[] {
@@ -153,7 +170,7 @@ let warningContent = ref("Something went wrong... No details are available");
         <span class="material-symbols-outlined nextWeek" @click="nextWeek()">chevron_right</span>
         <div class="timetable" v-if="events != null && (!fetching && !failed || hasData)">
             <template v-for="(_, day) in 7">
-                <div class="day" v-if="filterToDay(eventsArray(events), day).length > 0 || day < 5">
+                <div class="day" ref="dayRefs" :day="day" v-if="filterToDay(eventsArray(events), day).length > 0 || day < 5">
                     <b>{{ DAY_STRINGS[day] }}</b>
                     <template v-for="ev in filterToDay(eventsArray(events), day)">
                         <div class="event">
