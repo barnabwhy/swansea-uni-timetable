@@ -32,3 +32,5 @@ coverage
 
 .env
 .yarn/install-state.gz
+
+bun.lockb
