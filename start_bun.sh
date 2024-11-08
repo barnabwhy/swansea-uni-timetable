@@ -24,7 +24,7 @@ bun install
 dev="dev"
 if [ "$1" = "$dev" ]; then
     export NODE_ENV="dev"
-    bun run src/main.ts --watch 
+    bun run --watch src/main.ts
 else
     bun run src/main.ts
 fi
