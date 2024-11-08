@@ -24,5 +24,7 @@
 <style scoped>
 main {
     padding: 2rem;
+    height: 100%;
+    overflow: auto;
 }
 </style>

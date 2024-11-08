@@ -497,6 +497,7 @@ h1 {
     position: absolute;
     top: 2rem;
     right: 2rem;
+    width: 1.5rem;
     margin: 0;
     padding: 8px;
     background-color: rgba(0, 0, 0, 0.1);
