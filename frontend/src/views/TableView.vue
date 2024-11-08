@@ -498,6 +498,7 @@ h1 {
     top: 2rem;
     right: 2rem;
     width: 1.5rem;
+    overflow: hidden;
     margin: 0;
     padding: 8px;
     background-color: rgba(0, 0, 0, 0.1);
