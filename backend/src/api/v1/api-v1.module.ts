@@ -6,7 +6,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 @Module({
   imports: [
     CacheModule.register({
-      ttl: 5 * 60 * 1000,
+      ttl: process.env.NODE_ENV == 'dev' ? 1 : (5 * 60 * 1000),
     }),
   ],
   controllers: [ApiV1Controller],

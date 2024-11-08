@@ -203,7 +203,7 @@ export interface EventProperty {
 }
 
 export interface EventsList {
-  CategoryEvents?: any[];
+  CategoryEvents?: CategoryEvents[];
   BookingRequests?: never[];
   PersonalEvents?: never[];
 }
@@ -270,6 +270,8 @@ const DEFAULT_CATEGORY_SELECTION_LIMIT = 4;
 export async function getAllCatEvents(
   type: string,
   cat: string,
+  countRequests?: boolean,
+  skipInternalCache?: boolean,
 ): Promise<EventsList> {
   if (!apiData.categoryBody)
     throw new APIError(ErrorType.REQUEST_FAILED, 'Not yet initialised');
@@ -277,7 +279,7 @@ export async function getAllCatEvents(
   const body = Object.assign({}, apiData.categoryBody);
   body.ViewOptions.Weeks = apiData.weeks;
 
-  return getCatEventsWithBody(type, cat, body);
+  return getCatEventsWithBody(type, cat, body, countRequests, skipInternalCache);
 }
 
 export async function getWeekOffsetCatEvents(
@@ -332,10 +334,151 @@ export async function getWeekStartCatEvents(
   return getCatEventsWithBody(type, cat, body);
 }
 
+const CAT_REQUEST_COUNT: { [type: string]: Map<string, number> } = {};
+
+function countCatRequests(type: string, cats: string[]) {
+  if (!CAT_REQUEST_COUNT[type]) {
+    CAT_REQUEST_COUNT[type] = new Map();
+  }
+
+  for (let cat of cats) {
+    let reqCount = CAT_REQUEST_COUNT[type].get(cat) ?? 0;
+    CAT_REQUEST_COUNT[type].set(cat, reqCount+1);
+  }
+}
+
+const CAT_EVENT_CACHE_EXPIRY = 5*60*1000; // 5 mins
+
+interface CatEventCache {
+  [type: string]: {
+    [cat: string]: {
+      lastFetched: number;
+      events: EventsList;
+    };
+  }
+};
+
+let catEventsCache: CatEventCache = {}
+
+function determinePopularCatThreshold(type: string): number {
+  let countsSorted = CAT_REQUEST_COUNT[type].values().toArray().toSorted().reverse();
+
+  if (countsSorted.length == 0)
+    return 0;
+
+  if (countsSorted.length < 10)
+    return Math.min(countsSorted[0], 5); // Whatever is lower, 5 or the highest count.
+
+  return Math.max(countsSorted[9], 5); // Whatever is higher, 5 or the 10th highest count.
+}
+
+async function precachePopularCatEvents() {
+  try {
+    const startTime = Date.now();
+    let numberCached = 0;
+
+    log("PROXY", "Precaching popular events...");
+
+    let newCatEventsCache: CatEventCache = Object.assign({}, catEventsCache);
+
+    // Remove expired entries
+    for (let type in newCatEventsCache) {
+      for(let cat in newCatEventsCache[type]) {
+        if (newCatEventsCache[type][cat].lastFetched < (Date.now() - CAT_EVENT_CACHE_EXPIRY))
+          newCatEventsCache[type][cat] = undefined;
+      }
+    }
+
+    for(let type in CAT_REQUEST_COUNT) {
+      let threshold = determinePopularCatThreshold(type);
+
+      if (!newCatEventsCache[type])
+        newCatEventsCache[type] = {};
+
+      for(let [cat, count] of CAT_REQUEST_COUNT[type]) {
+        CAT_REQUEST_COUNT[type].set(cat, count - Math.floor(threshold / 2));
+
+        if (count >= threshold) {
+          newCatEventsCache[type][cat] = {
+            lastFetched: Date.now(),
+            events: await getAllCatEvents(type, cat, false, true),
+          };
+          numberCached++;
+        }
+      }
+    }
+    catEventsCache = newCatEventsCache;
+
+    log("PROXY", `Finished precaching ${numberCached} popular categories' events in ${(Date.now() - startTime) / 1000}s`);
+  }catch (e) {
+    log('PROXY', 'Failed to precache popular events: ', e);
+  }
+}
+
+setInterval(precachePopularCatEvents, 2.5 * 60 * 1000); // Run every 2.5 minutes
+
+function areCatEventsCached(type: string, cat: string): boolean {
+  let exists = !!(catEventsCache[type]?.[cat]);
+  if (!exists)
+    return false;
+
+  let expired = catEventsCache[type][cat].lastFetched < (Date.now() - CAT_EVENT_CACHE_EXPIRY);
+  if (expired) {
+    catEventsCache[type][cat] = undefined;
+  }
+
+  return !expired;
+}
+
+function eventMatchesBody(
+  event: TimetableEvent,
+  body: { [key: string]: any },
+): boolean {
+  let eventStartDate = new Date(event.StartDateTime);
+  let eventEndDate = new Date(event.EndDateTime);
+
+  let isInAnyWeek = false;
+
+  // This is horrifying but it works
+  for (let week of body.ViewOptions.Weeks) {
+    if (week.FirstDayInWeek) {
+      let startOfWeek = new Date(week.FirstDayInWeek);
+      let endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23, 59, 59, 999);
+
+      if (eventStartDate.getTime() >= startOfWeek.getTime() && eventStartDate.getTime() <= endOfWeek.getTime()) {
+        isInAnyWeek = true;
+        break;
+      }
+      if (eventEndDate.getTime() >= startOfWeek.getTime() && eventEndDate.getTime() <= endOfWeek.getTime()) {
+        isInAnyWeek = true;
+        break;
+      }
+    }
+  }
+
+  if (!isInAnyWeek)
+    return false;
+
+  let isInAnyDay = false;
+
+  for (let day of body.ViewOptions.Days) {
+    if (eventStartDate.getDay() == day.DayOfWeek || eventEndDate.getDay() == day.DayOfWeek) {
+      isInAnyDay = true;
+      break;
+    }
+  }
+
+  return isInAnyDay;
+}
+
 async function getCatEventsWithBody(
   type: string,
   cat: string,
   body: { [key: string]: any },
+  countRequests: boolean = true,
+  skipInternalCache: boolean = false,
 ): Promise<EventsList> {
   const cats = cat.split(/[_,]/).map((c) => c.trim());
   const result = {
@@ -344,12 +487,47 @@ async function getCatEventsWithBody(
     PersonalEvents: null,
   };
 
+  if (countRequests)
+    countCatRequests(type, cats);
+
+  let uncachedCats = cats;
+
+  if (!skipInternalCache) {
+    let cachedCats = cats.filter(cat => areCatEventsCached(type, cat));
+    uncachedCats = cats.filter(cat => !areCatEventsCached(type, cat));
+
+    for (let cat of cachedCats) {
+      const data: EventsList = structuredClone(catEventsCache[type][cat].events);
+
+      if (data.CategoryEvents) {
+        // Filter events to those in the selected time
+        for (const events of data.CategoryEvents) {
+          events.Results = events.Results.filter((event) => eventMatchesBody(event, body));
+        }
+        result.CategoryEvents = (result.CategoryEvents ?? []).concat(
+          data.CategoryEvents,
+        );
+      }
+
+      // These like don't exist anyway :3
+      // if (data.BookingRequests)
+      //   result.BookingRequests = (result.BookingRequests ?? []).concat(
+      //     data.BookingRequests,
+      //   );
+
+      // if (data.PersonalEvents)
+      //   result.PersonalEvents = (result.PersonalEvents ?? []).concat(
+      //     data.PersonalEvents,
+      //   );
+    }
+  }
+
   const types = await getTypesList();
   const chunkSize =
     types.find((t) => t.CategoryTypeId == type)?.CategorySelectionLimit ??
     DEFAULT_CATEGORY_SELECTION_LIMIT;
 
-  for (const catWin of chunk(cats, chunkSize)) {
+  for (const catWin of chunk(uncachedCats, chunkSize)) {
     body.CategoryTypesWithIdentities = [
       {
         CategoryTypeIdentity: type,

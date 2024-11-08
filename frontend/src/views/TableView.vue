@@ -320,7 +320,7 @@ main {
     border-radius: 32px;
     font-size: 24px;
     user-select: none;
-    cursor: pointer;
+    /* cursor: pointer; */
     transition: opacity 0.2s 0.05s;
     opacity: 0;
     color: rgb(255, 199, 87);
@@ -329,6 +329,7 @@ main {
 .warning.visible {
     /* visibility: visible; */
     opacity: 1;
+    cursor: pointer;
 }
 
 .warning-details {
