@@ -110,7 +110,7 @@ async function fetchWeekEvents(isInitialLoad: boolean) {
         warningContent.value = `Failed fetching events for timetable.`;
 
         if (usedCache)
-            warningContent.value += `Failed fetching events for timetable.<br>Using cached data from <b>${dateStr}</b>`;
+            warningContent.value += `<br>Using cached data from <b>${dateStr}</b>`;
 
         warningContent.value += `<br><br><b>Error encountered:</b><p class="error"><code>${escape(e.toString()).replace(/\n/g, '<br>')}</code></p>`;
 
