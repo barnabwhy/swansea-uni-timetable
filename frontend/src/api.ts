@@ -1,7 +1,6 @@
 import { StreamedList, waitFor } from "./util";
 
-export const API_BASE = "https://timetable.swansea.cymru/";
-// export const API_BASE = "http://192.168.0.110:3000/"
+export const API_BASE = import.meta.env.PROD ? "https://timetable.swansea.cymru/" : "http://localhost:3000/";
 
 export const API_V1 = "api/v1/";
 export const API_V2 = "api/v2/";
@@ -25,7 +24,7 @@ export async function getTimetableCats(type: string): Promise<StreamedList<Timet
 
     if (res.body)
         streamList.read(res.body.getReader());
-        
+
     catCache[type] = {
         lastUpdated: Date.now(),
         data: streamList,
