@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import TypeView from '@/views/TypeView.vue';
 import SelectView from '@/views/SelectView.vue';
 import TableView from '@/views/TableView.vue';
+import DataUseView from '@/views/DataUseView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +40,11 @@ const router = createRouter({
       path: '/table/:type/:cat',
       name: 'timetable',
       component: TableView,
+    },
+    {
+      path: '/data-use',
+      name: 'data-use',
+      component: DataUseView,
     },
   ]
 })

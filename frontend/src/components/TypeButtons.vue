@@ -47,13 +47,13 @@ let types = await getTimetableTypes();
 }
 
 .timetable-type-button:hover {
-  border-color: aquamarine;
+  border-color: var(--color-accent);
 }
 .timetable-type-button:active {
   opacity: 0.8;
 }
 
 .timetable-type-button.active {
-  border-color: mediumaquamarine;
+  border-color: var(--color-accent-dark);
 }
 </style>

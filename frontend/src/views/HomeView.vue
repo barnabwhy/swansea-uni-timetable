@@ -73,7 +73,7 @@ main {
 }
 
 .select-timetable-button:hover {
-  border-color: aquamarine;
+  border-color: var(--color-accent);
 }
 .select-timetable-button:active {
   opacity: 0.8;

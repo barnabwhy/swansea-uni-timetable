@@ -100,7 +100,7 @@ input {
 }
 
 .timetable-category-button:hover {
-    border-color: aquamarine;
+    border-color: var(--color-accent);
 }
 
 .timetable-category-button:active {
@@ -114,6 +114,6 @@ input {
 }
 
 .timetable-category-button.active {
-    border-color: mediumaquamarine;
+    border-color: var(--color-accent-dark);
 }
 </style>

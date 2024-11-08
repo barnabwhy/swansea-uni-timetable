@@ -1,12 +1,15 @@
-import { StreamedList, waitFor } from "./util";
+import { addUserIdHeader, getUserIdentifier } from "./analytics";
+import { StreamedList } from "./util";
 
 export const API_BASE = import.meta.env.PROD ? "https://timetable.swansea.cymru/" : "http://localhost:3000/";
 
-export const API_V1 = "api/v1/";
+// export const API_V1 = "api/v1/";
 export const API_V2 = "api/v2/";
 
 export async function getTimetableTypes(): Promise<TimetableType[]> {
-    let res = await fetch(API_BASE + API_V1 + 'types');
+    let res = await fetch(API_BASE + API_V2 + 'types', {
+        headers: await addUserIdHeader(),
+    });
     return await res.json();
 }
 
@@ -20,7 +23,9 @@ export async function getTimetableCats(type: string): Promise<StreamedList<Timet
     }
 
     let streamList = new StreamedList<TimetableCategory>();
-    let res = await fetch(API_BASE + API_V2 + `cats/${type}`);
+    let res = await fetch(API_BASE + API_V2 + `cats/${type}`, {
+        headers: await addUserIdHeader(),
+    });
 
     if (res.body)
         streamList.read(res.body.getReader());

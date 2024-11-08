@@ -4,6 +4,7 @@ import { nextTick, ref } from 'vue';
 import { getStartOfWeek, formatTime } from '@/util';
 import type { TimetableEvent, EventsList } from '@/api';
 import { API_BASE, API_V2 } from '@/api';
+import { addUserIdHeader } from '@/analytics';
 
 const DAY_STRINGS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -63,7 +64,9 @@ async function fetchWeekEvents(isInitialLoad: boolean) {
             warningContent.value = `Failed fetching events for timetable.<br>Using cached data from <b>${dateStr}</b>`;
         }
 
-        let res = await fetch(url);
+        let res = await fetch(url, {
+            headers: await addUserIdHeader(),
+        });
 
         if (res && res.ok) {
             cache.put(url, res.clone());
@@ -444,7 +447,7 @@ h1 {
 }
 
 .event.active {
-    border-color: aquamarine;
+    border-color: var(--color-accent);
 }
 
 .event .name {

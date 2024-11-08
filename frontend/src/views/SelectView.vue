@@ -141,7 +141,7 @@ main {
 }
 
 .sidebar-toggle:hover {
-    border-color: aquamarine;
+    border-color: var(--color-accent);
 }
 
 .sidebar-toggle:active {
@@ -191,7 +191,7 @@ main {
 }
 
 .done-button:hover {
-    border-color: aquamarine;
+    border-color: var(--color-accent);
 }
 
 .done-button:active {
@@ -281,7 +281,7 @@ summary::marker {
     cursor: pointer;
     font-family: Arial, Helvetica, sans-serif;
     transition: border-color .2s, opacity .2s;
-    border: 1px solid mediumaquamarine;
+    border: 1px solid var(--color-accent-dark);
     color: var(--color-text);
     font-weight: bold;
 }
