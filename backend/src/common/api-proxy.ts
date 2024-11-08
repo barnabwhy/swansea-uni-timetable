@@ -394,7 +394,7 @@ async function precachePopularCatEvents() {
         newCatEventsCache[type] = {};
 
       for(let [cat, count] of CAT_REQUEST_COUNT[type]) {
-        CAT_REQUEST_COUNT[type].set(cat, count - Math.floor(threshold / 2));
+        CAT_REQUEST_COUNT[type].set(cat, count - Math.round(threshold / 2));
 
         if (count >= threshold) {
           newCatEventsCache[type][cat] = {
