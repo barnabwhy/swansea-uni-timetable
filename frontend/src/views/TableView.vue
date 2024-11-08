@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import router from '@/router';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import { getStartOfWeek, formatTime } from '@/util';
 import type { TimetableEvent, EventsList } from '@/api';
 import { API_BASE, API_V2 } from '@/api';
@@ -9,6 +9,7 @@ const DAY_STRINGS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sa
 
 const AUTO_RELOAD_TIME = 15 * 60 * 1000; // 15 minutes
 
+const timetableContainer = ref<HTMLDivElement | null>(null);
 const dayRefs = ref<HTMLDivElement[]>([]);
 
 let type = router.currentRoute.value.params.type;
@@ -34,6 +35,9 @@ async function fetchWeekEvents(isInitialLoad: boolean) {
         weekOffset.value -= 1;
         weekOffsetChangedAt.value = Date.now();
     }
+
+    // Get current scroll location
+    let timetableScrollPos = timetableContainer.value?.scrollLeft ?? 0;
 
     let usedWeekOffset = weekOffset.value;
     failed.value = false;
@@ -72,20 +76,29 @@ async function fetchWeekEvents(isInitialLoad: boolean) {
                 hasData.value = true;
             }
 
-            if (weekOffset.value == 0 && isInitialLoad) {
-                // Scroll Horizontally to current day
-                const currentDay = (new Date()).getDay() - 1;
-                for (const dayRef of dayRefs.value) {
-                    if (parseInt(dayRef.getAttribute("day") ?? "0") == currentDay ){
-                        dayRef.scrollIntoView({
-                            behavior: 'auto',
-                            block: 'center',
-                            inline: 'center'
-                        })
-                        break;
+            fetching.value = false;
+
+            nextTick(() => {
+                if (weekOffset.value == 0 && isInitialLoad) {
+                    // Scroll horizontally to current day
+                    const currentDay = (new Date()).getDay() - 1;
+                    for (const dayRef of dayRefs.value) {
+                        if (parseInt(dayRef.getAttribute("day") ?? "0") == currentDay ){
+                            dayRef.scrollIntoView({
+                                behavior: 'auto',
+                                block: 'center',
+                                inline: 'center'
+                            })
+                            break;
+                        }
                     }
+                } else if (timetableContainer.value) {
+                    // Scroll horizontally to previous location
+                    timetableContainer.value.scrollTo({
+                        left: timetableScrollPos,
+                    });
                 }
-            }
+            });
         } else {
             failed.value = true;
         }
@@ -168,7 +181,7 @@ let warningContent = ref("Something went wrong... No details are available");
         <!-- <span class="material-symbols-outlined settings" @click="showSettings = true">settings</span> -->
         <span class="material-symbols-outlined prevWeek" @click="prevWeek()">chevron_left</span>
         <span class="material-symbols-outlined nextWeek" @click="nextWeek()">chevron_right</span>
-        <div class="timetable" v-if="events != null && (!fetching && !failed || hasData)">
+        <div class="timetable" v-if="events != null && (!fetching && !failed || hasData)" ref="timetableContainer">
             <template v-for="(_, day) in 7">
                 <div class="day" ref="dayRefs" :day="day" v-if="filterToDay(eventsArray(events), day).length > 0 || day < 5">
                     <b>{{ DAY_STRINGS[day] }}</b>
