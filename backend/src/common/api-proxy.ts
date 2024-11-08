@@ -366,10 +366,8 @@ function determinePopularCatThreshold(type: string): number {
   if (countsSorted.length == 0)
     return 0;
 
-  if (countsSorted.length < 10)
-    return Math.min(countsSorted[0], 5); // Whatever is lower, 5 or the highest count.
-
-  return Math.max(countsSorted[9], 5); // Whatever is higher, 5 or the 10th highest count.
+  let thresholdIndex = Math.min(countsSorted.length - 1, Math.max(10, Math.ceil(countsSorted.length / 4)));
+  return countsSorted[thresholdIndex]; // Top 25%, with a min count of 10.
 }
 
 async function precachePopularCatEvents() {
