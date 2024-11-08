@@ -9,15 +9,16 @@ const UIDS_SEEN = new Map<string, number>();
 
 interface UsageMetrics {
     users: {
-        hourly: number;
+        hourly: number[];
         daily: number;
     };
     requests: {
-        hourly: number;
+        hourly: number[];
         daily: number;
     }
 }
 
+const HOURLY_USER_COUNTER: number[] = Array(24).fill(0);
 const HOURLY_REQUEST_COUNTER: number[] = Array(24).fill(0);
 
 @Injectable()
@@ -57,6 +58,8 @@ setInterval(() => {
 const METRICS_LOG_PATH = process.env.METRICS_LOG_PATH ?? path.resolve(process.cwd(), "../metrics/");
 let metricsFileTimestamp = Date.now();
 
+let hourStartedAt = Date.now();
+
 function logMetrics() {
     log("METRICS", "Saving metrics.");
 
@@ -66,16 +69,19 @@ function logMetrics() {
 
     let metricsFilePath = path.resolve(METRICS_LOG_PATH, `./${metricsFileTimestamp}.json`);
 
-    let lastHourUIDs = UIDS_SEEN.entries().toArray().filter(([_, lastReq]) => lastReq >= (Date.now() - 60*60*1000)).length;
+    let lastHourUIDs = UIDS_SEEN.entries().toArray().filter(([_, lastReq]) => lastReq >= hourStartedAt).length;
     let lastDayUIDs = UIDS_SEEN.entries().toArray().filter(([_, lastReq]) => lastReq >= (Date.now() - 24*60*60*1000)).length;
+
+    HOURLY_USER_COUNTER.shift();
+    HOURLY_USER_COUNTER.push(lastHourUIDs);
 
     let metrics: UsageMetrics = {
         users: {
-            hourly: lastHourUIDs,
+            hourly: HOURLY_USER_COUNTER,
             daily: lastDayUIDs,
         },
         requests: {
-            hourly: HOURLY_REQUEST_COUNTER[23],
+            hourly: HOURLY_REQUEST_COUNTER,
             daily: HOURLY_REQUEST_COUNTER.reduce((a,b)=>a+b),
         },
     };
@@ -84,13 +90,15 @@ function logMetrics() {
 
     HOURLY_REQUEST_COUNTER.shift();
     HOURLY_REQUEST_COUNTER.push(0);
+
+    hourStartedAt = Date.now();
 }
 
 function rotateMetricsFile() {
     metricsFileTimestamp = Date.now();
 }
 
-process.on("SIGINT", async () => {
+process.on("SIGINT", () => {
     console.log("Ctrl-C was pressed");
     logMetrics();
     process.exit();
