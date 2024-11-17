@@ -384,6 +384,7 @@ async function precachePopularCatEvents() {
       for(let cat in newCatEventsCache[type]) {
         if (newCatEventsCache[type][cat].lastFetched < (Date.now() - CAT_EVENT_CACHE_EXPIRY))
           newCatEventsCache[type][cat] = undefined;
+          delete newCatEventsCache[type][cat];
       }
     }
 
@@ -423,6 +424,7 @@ function areCatEventsCached(type: string, cat: string): boolean {
   let expired = catEventsCache[type][cat].lastFetched < (Date.now() - CAT_EVENT_CACHE_EXPIRY);
   if (expired) {
     catEventsCache[type][cat] = undefined;
+    delete catEventsCache[type][cat];
   }
 
   return !expired;
